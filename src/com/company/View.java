@@ -71,27 +71,38 @@ public class View extends JPanel {
         g.setColor(BG_COLOR);
         g.drawImage(background.getSubimage(0, 100, 1280, 720)
                 , 0, 0, this);
+        int offsetStableX = 1280 / 30;
+        int offsetStableY = 650 / 15;
         int offx;
         int offy;
 
         char[][] mapDec = controller.getStage();
         for (int i = 0; i < mapDec.length; i++) {
             for (int j = 0; j < mapDec[0].length; j++) {
+                g.setFont(new Font("Arial", Font.BOLD, 12));
+//                g.drawString(j + ":" + i,
+//                        (int) offsetCoors(j, 1280 / 30),(int) offsetCoors(i, offsetStableY)-20);
+//                g.drawString( (int)offsetCoors(j, offsetStableX) + ":" + (int)offsetCoors(i, offsetStableY),
+//                        (int) offsetCoors(j, offsetStableX),(int) offsetCoors(i, offsetStableY));
                 if (mapDec[i][j] == 'l') {
-                    offx = offsetCoors(j, (int) (1280 / 12.75)) - 50;
-                    offy = offsetCoors(i, 650 / 15) - 30;
-                    g.drawImage(platformHorizontal1, offx, offy, 100, 100, this);
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
+                    offy = (int) (offsetCoors(i, offsetStableY)) - 30;
+//                    g.drawLine(0, offx, this.getWidth(), offx);
+//                    g.drawLine(offy, 0, offy, this.getHeight());
+                    g.drawImage(platformHorizontal1, offx, offy, 50, 100, this);
                 } else if (mapDec[i][j] == 'v') {
-                    offx = offsetCoors(j, (int) (1280 / 12.75)) - 50;
-                    offy = offsetCoors(i, 650 / 15);
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
+                    offy = (int) offsetCoors(i, offsetStableY);
+//                    g.drawLine(0, offx, this.getWidth(), offx);
+//                    g.drawLine(offy, 0, offy, this.getHeight());
                     g.drawImage(platformVertical1, offx, offy, 100, 50, this);
                 }
             }
         }
 
-        offx = offsetCoors((int) controller.getWarrior().getX(), 1280 / 256) - 53 / 2;
-        if (controller.getPlayerFrame() < 9) offy = offsetCoors((int) controller.getWarrior().getY(), 650 / 30) + 5;
-        else offy = offsetCoors((int) controller.getWarrior().getY(), 650 / 30) - 20 + 5;
+        offx = (int) (offsetCoors( controller.getWarrior().getX(), offsetStableX) - 53 / 2);
+        if (controller.getPlayerFrame() < 9) offy = (int) (offsetCoors((int) controller.getWarrior().getY(), offsetStableY));
+        else offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 20);
         if (controller.getWarrior().getDirection() == -1 || controller.getWarrior().getDirection() == 0) {
 //            System.out.println("direction left/stop " + controller.getWarrior().getDirection());
             g.drawImage(sprites[controller.getPlayerFrame()], offx, offy, this);
@@ -100,19 +111,19 @@ public class View extends JPanel {
             g.drawImage(mirror(sprites[controller.getPlayerFrame()]), offx, offy, this);
         }
 
-//        System.out.println((double) offsetCoors((int) controller.getWarrior().getX(), 1280 / 256) / 100
-//                + " " + ((1280 / 256) * controller.getWarrior().getX()) / 100
-//                + " " + controller.getWarrior().getY());
+        System.out.println( offsetCoors(controller.getWarrior().getX(), offsetStableX) / 42
+                + " " + ((1280 / 256) * controller.getWarrior().getX()) / 100
+                + " " + controller.getWarrior().getY());
 
 //        System.out.println(controller.getPlayerFrame() + " of " + sprites.length);
 
-        for (int i = 0; i < controller.getField().getHeight(); i++) {//*25
-//            g.drawLine(i * 1280 / 256, 0, i * 1280 / 256, this.getHeight());
-            g.drawLine(i * 100, 0, i * 100, this.getHeight());
+        for (int i = 0; i < controller.getField().getWidth()+1; i++) {//*25
+            g.drawLine(i * offsetStableX, 0, i * offsetStableX, this.getHeight());
+//            g.drawLine(i * 100, 0, i * 100, this.getHeight());
         }
-        for (int i = 0; i < controller.getField().getWidth(); i++) {//*2
-//            g.drawLine(0, i * 650 / 15, this.getWidth(), i * 650 / 15);
-            g.drawLine(0, i * 650 / 15, this.getWidth(), i * 650 / 15);
+        for (int i = 0; i < controller.getField().getHeight(); i++) {//*2
+//            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
+            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
         }
     }
 
@@ -140,7 +151,7 @@ public class View extends JPanel {
         return mimg;
     }
 
-    private static int offsetCoors(int arg, int peaceSize) {
+    private static double offsetCoors(double arg, int peaceSize) {
         return arg * (peaceSize);
 //        return arg * (peaceMargin + peaceSize) + peaceMargin;
     }

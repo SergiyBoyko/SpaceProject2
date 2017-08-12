@@ -14,8 +14,8 @@ public class Field {
             System.exit(0);
         }
         stageDecoration = StageDecoration.values()[stage];
-        width = stageDecoration.getMap().length;
-        height = stageDecoration.getMap()[0].length;
+        width = stageDecoration.getMap()[0].length;
+        height = stageDecoration.getMap().length;
     }
 
     public char[][] getStage() {

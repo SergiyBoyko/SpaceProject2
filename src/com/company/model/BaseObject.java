@@ -79,8 +79,8 @@ public abstract class BaseObject {
         char[][] stage = field.getStage();
         for (int i = 0; i < stage.length; i++) {
             for (int j = 0; j < stage[i].length; j++) {
-                if (stage[i][j] == 'v') {
-                    if (i == y && (j >= (x) * 0.05 - 0.2 && j <= (x) * 0.05 + 0.2)) {
+                if (stage[i][j] == 'v' || stage[i][j] == 'l') {
+                    if (i == Math.round(y) && (j >= (x) - 0.6 && j <= (x) + 0.6)) {
                         System.out.println("checkBorders");
                         System.err.println("in Wall!!");
 //                        System.err.println("v=" + j + ":" + i + " you=" + (x - 1) * 0.05 + ":" + y);

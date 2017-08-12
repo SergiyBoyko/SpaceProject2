@@ -13,14 +13,21 @@ public class SpaceWarrior extends BaseObject {
     //направление (-1 влево,+1 вправо,0 напротив)
     private double direction = 0;
     // на ногах или в воздухе
-    private boolean onFoot;
+    private boolean jumped;
+    private boolean onFloor;
 
-    public boolean isOnFoot() {
-        return onFoot;
+    private double beforeJumpY;
+
+    public boolean isJumped() {
+        return jumped;
     }
 
     public double getDirection() {
         return direction;
+    }
+
+    public void setDirection(double direction) {
+        this.direction = direction;
     }
 
     /**
@@ -46,15 +53,18 @@ public class SpaceWarrior extends BaseObject {
      * Устанавливаем вектор движения влево
      */
     public void jump() {
-        dy = -1;
-        onFoot = false;
+        if (jumped || !onFloor) return;
+        this.beforeJumpY = y;
+        dy = -0.25;
+        jumped = true;
+        onFloor = false;
     }
 
     /**
      * Устанавливаем вектор движения влево
      */
     public void moveLeft() {
-        dx = -1;
+        dx = -0.2;
         direction = -1;
     }
 
@@ -62,37 +72,62 @@ public class SpaceWarrior extends BaseObject {
      * Устанавливаем вектор движения вправо
      */
     public void moveRight() {
-        dx = 1;
+        dx = 0.2;
         direction = 1;
     }
 
     @Override
     public void move(Controller controller) {
-        if (falling(controller.getField())) {
+        onFloor = !falling(controller.getField());
+        if (jumped) {
+            System.out.println("jump");
+            if (beforeJumpY - 2 < y && !jumpInterrupted(controller.getField())) {
+                y += dy;
+                x += dx;
+            } else jumped = false;
+        } else if (!onFloor) {
 //        System.out.println(falling(controller.getField()));
-            y++;
-        }
-        x = x + dx;
-        if (!checkBorders(controller.getField())) {
-            x = x - dx;
-        }
+            System.out.println("fall");
+            y += 0.25;
+        } else {
+            System.out.println("moving");
+            x = x + dx;
+            if (!checkBorders(controller.getField())) {
+                x = x - dx;
+            }
 //        checkBorders(radius, Space.game.getWidth() - radius + 1, 1, Space.game.getHeight() + 1);
+        }
     }
 
     private boolean falling(Field field) {
         char[][] stage = field.getStage();
 //        System.out.printf("falling: x=%d, y=%.2f field: x=%d, y=%d",
 //          (int) Math.round(x * 0.05), y, stage[0].length, stage.length);
-        if (stage.length > y/2 + 1 && stage[0].length > (int) Math.round(x * 0.05)) {
-//            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x * 0.05)]);
-            if (stage[(int) y/2 + 1][(int) Math.round(x * 0.05)] == 'l')
+        if (stage.length > y + 1 && stage[0].length > (int) Math.round(x) ) {
+//            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x)]);
+            if (stage[(int) y + 1][(int) Math.round(x)] == 'l'
+                    || stage[(int) y + 1][(int) Math.round(x)] == 'v')
                 return false;
         }
         return true;
     }
 
+    private boolean jumpInterrupted(Field field) {
+        char[][] stage = field.getStage();
+//        System.out.printf("falling: x=%d, y=%.2f field: x=%d, y=%d",
+//          (int) Math.round(x * 0.05), y, stage[0].length, stage.length);
+        if (stage.length > y - 1 && stage[0].length > (int) Math.round(x) ) {
+//            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x)]);
+            if (stage[(int) y - 1][(int) Math.round(x)] == 'l'
+                    || stage[(int) y - 1][(int) Math.round(x)] == 'v')
+                return true;
+        }
+        return false;
+    }
+
     public SpaceWarrior(double x, double y) {
         super(x, y, 1, 10);
+        jumped = false;
     }
 
 }

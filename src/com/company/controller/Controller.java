@@ -57,7 +57,7 @@ public class Controller extends KeyAdapter implements MouseListener {
     public Controller() {
         view = new View(this);
         field = new Field(0);
-        warrior = new SpaceWarrior(10, 1); // x * 0.05, y
+        warrior = new SpaceWarrior(5, 1); // x * 0.05, y
     }
 
     public void run() {
@@ -71,7 +71,11 @@ public class Controller extends KeyAdapter implements MouseListener {
         while (true) {
             if (this.hasKeyEvents()) {
                 if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
+                    sleep(500);
+                    if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        System.exit(0);
+                    }
+                    else warrior = new SpaceWarrior(5, 1);
                 }
             }
             if (frameIterator >= warriorFrames.size())
@@ -88,11 +92,18 @@ public class Controller extends KeyAdapter implements MouseListener {
     public void keyPressed(KeyEvent e) {
 //        System.out.print(e.getKeyChar());
         keyEvents.add(e);
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            warrior.jump();
+        }
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             warrior.moveLeft();
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             warrior.moveRight();
+        }
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            warrior.setDirection(0);
+            warrior.stopMove();
         }
         warriorFrames = setWarriorFrame();
     }
