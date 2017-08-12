@@ -153,9 +153,9 @@ public class Controller extends KeyAdapter implements MouseListener {
         List<Integer> warriorFrame = new ArrayList<Integer>();
         warriorFrame.clear();
         if (warrior.getDirection() == 0 && warrior.getDx() == 0) warriorFrame.add(20);
-        else if ((warrior.getDirection() == 1 || warrior.getDirection() == -1) && warrior.getDx() == 0)
+        else if ((warrior.getDirection() > 0 || warrior.getDirection() < 0) && warrior.getDx() == 0)
             warriorFrame.add(21 + (int) (Math.random() * 2));
-        else if (warrior.getDx() == -1 || warrior.getDx() == 1) {
+        else if (warrior.getDx() < 0 || warrior.getDx() > 0) {
             warriorFrame.add(2);
             warriorFrame.add(7);
             warriorFrame.add(12);
