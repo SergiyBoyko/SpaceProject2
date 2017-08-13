@@ -80,34 +80,33 @@ public class SpaceWarrior extends BaseObject {
     public void move(Controller controller) {
         onFloor = !falling(controller.getField());
         if (jumped) {
-            System.out.println("jump");
+//            System.out.println("jump");
             if (beforeJumpY - 2 < y && !jumpInterrupted(controller.getField())) {
                 y += dy;
                 x += dx;
             } else jumped = false;
         } else if (!onFloor) {
-//        System.out.println(falling(controller.getField()));
-            System.out.println("fall");
+//            System.out.println("fall");
             y += 0.25;
+            x += dx / 2;
         } else {
-            System.out.println("moving");
+//            System.out.println("moving");
             x = x + dx;
-            if (!checkBorders(controller.getField())) {
-                x = x - dx;
-            }
-//        checkBorders(radius, Space.game.getWidth() - radius + 1, 1, Space.game.getHeight() + 1);
+        }
+//        System.out.println("dx=" + dx);
+        if (!checkBorders(controller.getField())) {
+            x = x - dx;
         }
     }
 
     private boolean falling(Field field) {
         char[][] stage = field.getStage();
-//        System.out.printf("falling: x=%d, y=%.2f field: x=%d, y=%d",
-//          (int) Math.round(x * 0.05), y, stage[0].length, stage.length);
-        if (stage.length > y + 1 && stage[0].length > (int) Math.round(x) ) {
-//            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x)]);
-            if (stage[(int) y + 1][(int) Math.round(x)] == 'l'
-                    || stage[(int) y + 1][(int) Math.round(x)] == 'v')
-                return false;
+        if (stage.length > y + 1 && stage[0].length > x) {//(int) Math.round(x)
+            //// TODO: 13.08.2017 check char array 
+            if (stage[(int) y + 1][(int) Math.round(x + 0.3)] == 'l' || stage[(int) y + 1][(int) Math.round(x - 0.3)] == 'l'
+                    || stage[(int) y + 1][(int) Math.round(x + 0.3)] == 'v' || stage[(int) y + 1][(int) Math.round(x - 0.3)] == 'v') {
+                    return false;
+            }
         }
         return true;
     }
@@ -116,7 +115,7 @@ public class SpaceWarrior extends BaseObject {
         char[][] stage = field.getStage();
 //        System.out.printf("falling: x=%d, y=%.2f field: x=%d, y=%d",
 //          (int) Math.round(x * 0.05), y, stage[0].length, stage.length);
-        if (stage.length > y - 1 && stage[0].length > (int) Math.round(x) ) {
+        if (stage.length > y - 1 && stage[0].length > (int) Math.round(x)) {
 //            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x)]);
             if (stage[(int) y - 1][(int) Math.round(x)] == 'l'
                     || stage[(int) y - 1][(int) Math.round(x)] == 'v')
