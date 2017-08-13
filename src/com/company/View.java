@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.controller.Controller;
+import com.company.model.Enemy;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -8,6 +9,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Serhii Boiko on 11.08.2017.
@@ -17,13 +20,14 @@ public class View extends JPanel {
     private static final int HEIGHT_SCREEN_SIZE = 720;
 
     private BufferedImage background;
-    private BufferedImage platformHorizontal1;
+    private List<BufferedImage> horizontalPlatforms1;
     private BufferedImage platformVertical1;
+//    private BufferedImage platformVertical1;
 
 
-    private BufferedImage playerSheet;
     // The above line throws an checked IOException which must be caught.
-    BufferedImage[] sprites;
+    private BufferedImage[] playerSprites;
+    private BufferedImage[] dAlienSprites;
 
     private Controller controller;
 
@@ -42,25 +46,45 @@ public class View extends JPanel {
 
     private void loadSources() throws IOException {
         background = ImageIO.read(new File("sources/images/backgrounds/9.jpg"));
-        platformHorizontal1 = ImageIO.read(new File("sources/images/decoration/floor_platform.png"));
+        horizontalPlatforms1 = new ArrayList<BufferedImage>();
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/m_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_floor_platform.png")));
         platformVertical1 = ImageIO.read(new File("sources/images/decoration/wall_platform.png"));
-        playerSheet = ImageIO.read(new File("sources/images/player/sheet_doom.gif"));
-        final int rows = 6;
+        BufferedImage playerSheet = ImageIO.read(new File("sources/images/player/sheet_doom.gif"));
+        int rows = 6;
         int cols = 9;
         int width = 477 / 9;
         int height = 432 / 6;
-        sprites = new BufferedImage[rows * cols];
+        playerSprites = split(rows, cols, width, height, playerSheet);
+//        BufferedImage playerSheet = ImageIO.read(new File("sources/images/player/sheet_halo.png"));
+//        int rows = 6;
+//        int cols = 9;
+//        int width = 477 / 9;
+//        int height = 432 / 6;
+//        playerSprites = split(rows, cols, width, height, playerSheet);
+        //130x120
+        rows = 1;
+        cols = 3;
+        width = 130;
+        height = 120;
+        BufferedImage dAlienSheet = ImageIO.read(new File("sources/images/enemy/dolphin_alien.gif"));
+        dAlienSprites = split(rows, cols, width, height, dAlienSheet);
+
+    }
+
+    private BufferedImage[] split(int rows, int cols, int width, int height, BufferedImage shit) {
+        BufferedImage[] sprites = new BufferedImage[rows * cols];
         for (int i = 0; i < rows; i++) {
             if (i >= 5) {
                 cols = 3 + i;
                 width = 477 / (3 + i);
             }
             for (int j = 0; j < cols; j++) {
-//                System.out.println("try " + j * width + " " + i * height + " " + width + " " + height);
-                sprites[(i * cols) + j] = playerSheet.getSubimage(j * width, i * height, width, height);
-//                System.out.println("good " + j * width + " " + i * height + " " + width + " " + height);
+                sprites[(i * cols) + j] = shit.getSubimage(j * width, i * height, width, height);
             }
         }
+        return sprites;
     }
 
     @Override
@@ -71,11 +95,84 @@ public class View extends JPanel {
         g.setColor(BG_COLOR);
         g.drawImage(background.getSubimage(0, 100, 1280, 720)
                 , 0, 0, this);
+//        int offsetStableX = 1280 / 30;
         int offsetStableX = 1280 / 30;
         int offsetStableY = 650 / 15;
+//        int offx;
+//        int offy;
+        paintStage(g, offsetStableX, offsetStableY);
+        paintEnemies(g, offsetStableX, offsetStableY);
+        paintPlayer(g, offsetStableX, offsetStableY);
+
+
+//        System.out.println( offsetCoors(controller.getWarrior().getX(), offsetStableX) / 42
+//                + " " + ((1280 / 256) * controller.getWarrior().getX()) / 100
+//                + " " + controller.getWarrior().getY());
+
+//        System.out.println(controller.getPlayerFrame() + " of " + sprites.length);
+/**
+ * very important lines
+ */
+//        for (int i = 0; i < controller.getField().getWidth()+1; i++) {//*25
+//            g.drawLine(i * offsetStableX, 0, i * offsetStableX, this.getHeight());
+////            g.drawLine(i * 100, 0, i * 100, this.getHeight());
+//        }
+//        for (int i = 0; i < controller.getField().getHeight(); i++) {//*2
+////            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
+//            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
+//        }
+/**
+ * very important lines
+ */
+    }
+
+    private void paintEnemies(Graphics g, int offsetStableX, int offsetStableY) {
         int offx;
         int offy;
+        List<Enemy> enemies = new ArrayList<>(controller.getEnemies());
+        for (Enemy enemy : enemies) {
+//            Image frame;
+//            if (enemy instanceof XenomorphEnemy) {
+//            }
+            offx = (int) (offsetCoors(enemy.getX(), offsetStableX) - 130 / 2);
+//        if (controller.getPlayerFrame() < 9)
+            offy = (int) (offsetCoors((int) enemy.getY(), offsetStableY)) - 60;
+//        else offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 20);
+            if (enemy.getDirection() == 1) {
+//            System.out.println("direction left/stop " + controller.getWarrior().getDirection());
+                g.drawImage(dAlienSprites[enemy.getEnemyFrame()], offx, offy, this);
+            } else {
+//            System.out.println("direction right " + controller.getWarrior().getDirection());
+                g.drawImage(mirror(dAlienSprites[enemy.getEnemyFrame()]), offx, offy, this);
+            }
 
+//            g.drawOval((int) (offsetStableX * enemy.getX())-3 ,
+//                    (int) (offsetStableY * enemy.getY())-3, 6, 6);
+        }
+    }
+
+    private void paintPlayer(Graphics g, int offsetStableX, int offsetStableY) {
+        int offx;
+        int offy;
+        offx = (int) (offsetCoors(controller.getWarrior().getX(), offsetStableX) - 53 / 2);
+        if (controller.getWarrior().getPlayerFrame() < 9) // controller.getWarrior().getPlayerFrame()
+            offy = (int) (offsetCoors((int) controller.getWarrior().getY(), offsetStableY));
+        else offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 20);
+        if (controller.getWarrior().getDirection() == -1 || controller.getWarrior().getDirection() == 0) {
+//            System.out.println("direction left/stop " + controller.getWarrior().getDirection());
+            g.drawImage(playerSprites[controller.getWarrior().getPlayerFrame()], offx, offy, this); //.getPlayerFrame()
+        } else {
+//            System.out.println("direction right " + controller.getWarrior().getDirection());
+            g.drawImage(mirror(playerSprites[controller.getWarrior().getPlayerFrame()]), offx, offy, this);//.getPlayerFrame()
+        }
+
+//        g.drawOval((int) (offsetStableX * controller.getWarrior().getX())-3 ,
+//                (int) (offsetStableY * controller.getWarrior().getY())-3, 6, 6);
+    }
+
+    private void paintStage(Graphics g, int offsetStableX, int offsetStableY) {
+        int offx;
+        int offy;
         char[][] mapDec = controller.getStage();
         for (int i = 0; i < mapDec.length; i++) {
             for (int j = 0; j < mapDec[0].length; j++) {
@@ -87,43 +184,21 @@ public class View extends JPanel {
                 if (mapDec[i][j] == 'l') {
                     offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
                     offy = (int) (offsetCoors(i, offsetStableY)) - 30;
-//                    g.drawLine(0, offx, this.getWidth(), offx);
-//                    g.drawLine(offy, 0, offy, this.getHeight());
-                    g.drawImage(platformHorizontal1, offx, offy, 50, 100, this);
+                    g.drawImage(horizontalPlatforms1.get(1), offx, offy, 50, 100, this);
+                } else if (mapDec[i][j] == 's') {
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
+                    offy = (int) (offsetCoors(i, offsetStableY)) - 30;
+                    g.drawImage(horizontalPlatforms1.get(0), offx, offy, 50, 100, this);
+                } else if (mapDec[i][j] == 'e') {
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
+                    offy = (int) (offsetCoors(i, offsetStableY)) - 30;
+                    g.drawImage(horizontalPlatforms1.get(2), offx, offy, 50, 100, this);
                 } else if (mapDec[i][j] == 'v') {
                     offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
                     offy = (int) offsetCoors(i, offsetStableY);
-//                    g.drawLine(0, offx, this.getWidth(), offx);
-//                    g.drawLine(offy, 0, offy, this.getHeight());
                     g.drawImage(platformVertical1, offx, offy, 100, 50, this);
                 }
             }
-        }
-
-        offx = (int) (offsetCoors( controller.getWarrior().getX(), offsetStableX) - 53 / 2);
-        if (controller.getPlayerFrame() < 9) offy = (int) (offsetCoors((int) controller.getWarrior().getY(), offsetStableY));
-        else offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 20);
-        if (controller.getWarrior().getDirection() == -1 || controller.getWarrior().getDirection() == 0) {
-//            System.out.println("direction left/stop " + controller.getWarrior().getDirection());
-            g.drawImage(sprites[controller.getPlayerFrame()], offx, offy, this);
-        } else {
-//            System.out.println("direction right " + controller.getWarrior().getDirection());
-            g.drawImage(mirror(sprites[controller.getPlayerFrame()]), offx, offy, this);
-        }
-
-        System.out.println( offsetCoors(controller.getWarrior().getX(), offsetStableX) / 42
-                + " " + ((1280 / 256) * controller.getWarrior().getX()) / 100
-                + " " + controller.getWarrior().getY());
-
-//        System.out.println(controller.getPlayerFrame() + " of " + sprites.length);
-
-        for (int i = 0; i < controller.getField().getWidth()+1; i++) {//*25
-            g.drawLine(i * offsetStableX, 0, i * offsetStableX, this.getHeight());
-//            g.drawLine(i * 100, 0, i * 100, this.getHeight());
-        }
-        for (int i = 0; i < controller.getField().getHeight(); i++) {//*2
-//            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
-            g.drawLine(0, i * offsetStableY, this.getWidth(), i * offsetStableY);
         }
     }
 
