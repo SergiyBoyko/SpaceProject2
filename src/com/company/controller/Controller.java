@@ -1,9 +1,7 @@
 package com.company.controller;
 
 import com.company.View;
-import com.company.model.BaseObject;
-import com.company.model.Field;
-import com.company.model.SpaceWarrior;
+import com.company.model.*;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -20,17 +18,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class Controller extends KeyAdapter implements MouseListener {
     private View view;
     private Field field;
+
+    private List<Enemy> enemies = new ArrayList<Enemy>();
+
     private SpaceWarrior warrior;
     private int tempX;
-    private List<Integer> warriorFrames;
-    private int playerFrame;
 
-    public int getPlayerFrame() {
-        return playerFrame;
+    public List<Enemy> getEnemies() {
+        return enemies;
     }
-//    public List<Integer> getWarriorFrames() {
-//        return warriorFrames;
-//    }
 
     public int getTempX() {
         return tempX;
@@ -57,16 +53,18 @@ public class Controller extends KeyAdapter implements MouseListener {
     public Controller() {
         view = new View(this);
         field = new Field(0);
-        warrior = new SpaceWarrior(5, 1); // x * 0.05, y
+        warrior = new SpaceWarrior(5, 1); // x, y
     }
 
     public void run() {
-//        SpaceWarrior warrior = new SpaceWarrior(1, 13);
-        warriorFrames = setWarriorFrame();
+        enemies.add(new XenomorphEnemy(20, 13));
+
+//        warrior.setWarriorFrames(setWarriorFrame());
+        warrior.setWarriorFrames();
+
         tempX = 0;
-        double frameIterator = 0;
-//        warriorFrame.add(20);
-        int dx = 1;
+        boolean onFloor = warrior.isOnFloor();
+//        int dx = 1;
 
         while (true) {
             if (this.hasKeyEvents()) {
@@ -74,14 +72,19 @@ public class Controller extends KeyAdapter implements MouseListener {
                     sleep(500);
                     if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
                         System.exit(0);
+                    } else {
+                        warrior = new SpaceWarrior(5, 1);
+//                        warrior.setWarriorFrames(setWarriorFrame());
+                        warrior.setWarriorFrames();
                     }
-                    else warrior = new SpaceWarrior(5, 1);
                 }
             }
-            if (frameIterator >= warriorFrames.size())
-                frameIterator = 0;
-            playerFrame = warriorFrames.get((int) frameIterator);
-            frameIterator += 0.3;
+            if (onFloor != warrior.isOnFloor()) {
+//                warrior.setWarriorFrames(setWarriorFrame());
+                warrior.setWarriorFrames();
+                onFloor = warrior.isOnFloor();
+            }
+
             view.repaint();
             sleep(60);
             moveAllItems();
@@ -105,7 +108,8 @@ public class Controller extends KeyAdapter implements MouseListener {
             warrior.setDirection(0);
             warrior.stopMove();
         }
-        warriorFrames = setWarriorFrame();
+//        warrior.setWarriorFrames(setWarriorFrame());
+        warrior.setWarriorFrames();
     }
 
     @Override
@@ -116,10 +120,12 @@ public class Controller extends KeyAdapter implements MouseListener {
     @Override
     public void keyReleased(KeyEvent e) {
 //        System.out.println(e.getKeyChar());
-        if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        if (e.getKeyCode() == KeyEvent.VK_LEFT
+                || e.getKeyCode() == KeyEvent.VK_RIGHT) {
             warrior.stopMove();
-            warriorFrames = setWarriorFrame();
         }
+//        warrior.setWarriorFrames(setWarriorFrame());
+        warrior.setWarriorFrames();
     }
 
     @Override
@@ -157,23 +163,25 @@ public class Controller extends KeyAdapter implements MouseListener {
     public void moveAllItems() {
         for (BaseObject object : getAllItems()) {
             object.move(this);
+            object.nextFrame();
         }
     }
 
-    public List<Integer> setWarriorFrame() {
-        List<Integer> warriorFrame = new ArrayList<Integer>();
-        warriorFrame.clear();
-        if (warrior.getDirection() == 0 && warrior.getDx() == 0) warriorFrame.add(20);
-        else if ((warrior.getDirection() > 0 || warrior.getDirection() < 0) && warrior.getDx() == 0)
-            warriorFrame.add(21 + (int) (Math.random() * 2));
-        else if (warrior.getDx() < 0 || warrior.getDx() > 0) {
-            warriorFrame.add(2);
-            warriorFrame.add(7);
-            warriorFrame.add(12);
-            warriorFrame.add(17);
-        }
-        return warriorFrame;
-    }
+//    public List<Integer> setWarriorFrame() {
+//        List<Integer> warriorFrame = new ArrayList<Integer>();
+//        warriorFrame.clear();
+//        if (warrior.getDirection() != 0 && !warrior.isOnFloor()) warriorFrame.add(12);
+//        else if (warrior.getDirection() == 0 && warrior.getDx() == 0) warriorFrame.add(20);
+//        else if ((warrior.getDirection() > 0 || warrior.getDirection() < 0) && warrior.getDx() == 0)
+//            warriorFrame.add(21 + (int) (Math.random() * 2));
+//        else if (warrior.getDx() < 0 || warrior.getDx() > 0) {
+//            warriorFrame.add(2);
+//            warriorFrame.add(7);
+//            warriorFrame.add(12);
+//            warriorFrame.add(17);
+//        }
+//        return warriorFrame;
+//    }
 
     /**
      * Метод возвращает общий список, который содержит все объекты игры
@@ -181,6 +189,7 @@ public class Controller extends KeyAdapter implements MouseListener {
     public List<BaseObject> getAllItems() {
         ArrayList<BaseObject> list = new ArrayList<BaseObject>();
         list.add(warrior);
+        list.addAll(enemies);
 //        list.addAll(ufos);
 //        list.addAll(bombs);
 //        list.addAll(rockets);

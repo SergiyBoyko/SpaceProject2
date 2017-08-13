@@ -18,6 +18,10 @@ public class Field {
         height = stageDecoration.getMap().length;
     }
 
+    public char[] getBarriers() {
+        return new char[] {'v', 'l', 'e', 's'};
+    }
+
     public char[][] getStage() {
         return stageDecoration.getMap();
     }

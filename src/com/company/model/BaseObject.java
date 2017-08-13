@@ -6,10 +6,19 @@ package com.company.model;
 
 import com.company.controller.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Базовый класс для всех объектов игры.
  */
 public abstract class BaseObject {
+    // массив кадров
+    protected List<Integer> objectFrames = new ArrayList<>();
+    // кадр
+    protected int objectFrame;
+    // индекс кадра
+    protected double frameIterator = 0;
     //координаты
     protected double x;
     protected double y;
@@ -73,29 +82,46 @@ public abstract class BaseObject {
     }
 
     /**
-     * Проверяем - не выходит ли (x,y) за границы.
+     * Проверяем - не вперся ли (x,y) в ограду.
      */
     public boolean checkBorders(Field field) {
         char[][] stage = field.getStage();
         for (int i = 0; i < stage.length; i++) {
             for (int j = 0; j < stage[i].length; j++) {
-                if (stage[i][j] == 'v' || stage[i][j] == 'l') {
-                    if (i == Math.round(y) && (j >= (x) - 0.6 && j <= (x) + 0.6)) {
-                        System.out.println("checkBorders");
-                        System.err.println("in Wall!!");
+                // TODO: 13.08.2017 char array needed. part-ready
+                char[] barriers = field.getBarriers();
+                for (int k = 0; k < barriers.length; k++) {
+
+                    if (stage[i][j] == barriers[k]) {
+                        if ((i == Math.round(y)) && (j >= (x) - 1 && j <= (x) + 1)) {
+                            System.err.println("in Wall!!");
 //                        System.err.println("v=" + j + ":" + i + " you=" + (x - 1) * 0.05 + ":" + y);
-                        System.err.printf("v=%d:%d you=%.2f:%.2f", j, i, (x * 0.05), y);
-                        return false;
+                            System.err.printf("v=%d:%d you=%.2f:%.2f(yRound=%d)\n", j, i, x, y, Math.round(y));
+                            return false;
+                        }
                     }
                 }
             }
-//            System.out.println();
         }
         return true;
-//        if (x < minx) x = minx;
-//        if (x > maxx) x = maxx;
-//        if (y < miny) y = miny;
-//        if (y > maxy) y = maxy;
+    }
+
+    /**
+     * Проверяем - не падает ли (x,y).
+     */
+    public boolean falling(Field field) {
+        char[][] stage = field.getStage();
+        if (stage.length > y + 1 && stage[0].length > x) {//(int) Math.round(x)
+            //// TODO: 13.08.2017 check char array
+            char[] barriers = field.getBarriers();
+            for (int k = 0; k < barriers.length; k++) {
+                if (stage[(int) y + 1][(int) Math.round(x + 0.3)] == barriers[k]
+                        || stage[(int) y + 1][(int) Math.round(x - 0.3)] == barriers[k]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 //    public void checkBorders(double minx, double maxx, double miny, double maxy) {
 //
@@ -120,6 +146,9 @@ public abstract class BaseObject {
 
     public void rise() {
         isAlive = true;
+    }
+
+    public void nextFrame() {
     }
 
     /**
