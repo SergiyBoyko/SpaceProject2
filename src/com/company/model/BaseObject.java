@@ -22,6 +22,8 @@ public abstract class BaseObject {
     //координаты
     protected double x;
     protected double y;
+    //направление (-1 влево,+1 вправо,0 напротив)
+    protected double direction = 0;
     //радиус объекта
     protected double radius;
     //очки жизни у объекта
@@ -61,6 +63,11 @@ public abstract class BaseObject {
         this.radius = radius;
     }
 
+    public double getDirection() {
+        return direction;
+    }
+
+
     public void takeDamage(double damage) {
         if (this.health - damage <= 0) this.die();
         else this.health -= damage;
@@ -93,7 +100,7 @@ public abstract class BaseObject {
                 for (int k = 0; k < barriers.length; k++) {
 
                     if (stage[i][j] == barriers[k]) {
-                        if ((i == Math.round(y)) && (j >= (x) - 1 && j <= (x) + 1)) {
+                        if ((i == Math.round(y)) && (j >= (x) - 0.8 && j <= (x) + 0.8)) {
                             System.err.println("in Wall!!");
 //                        System.err.println("v=" + j + ":" + i + " you=" + (x - 1) * 0.05 + ":" + y);
                             System.err.printf("v=%d:%d you=%.2f:%.2f(yRound=%d)\n", j, i, x, y, Math.round(y));

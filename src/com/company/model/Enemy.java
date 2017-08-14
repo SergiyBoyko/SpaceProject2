@@ -8,19 +8,15 @@ public class Enemy extends BaseObject {
     protected double dx = 0;
     //вектор движения (-1 влево,+1 вправо,0 стоп)
     protected double oldDx = 0;
-    //направление (-1 влево,+1 вправо,0 напротив)
-    protected double direction = 0;
     //дальность  обзора у объекта
     protected double visibility;
     //спокойный объект или атакует
     protected boolean excited;
+    //
+    protected boolean targetAchieved;
 
     public int getEnemyFrame() {
         return objectFrame;
-    }
-
-    public double getDirection() {
-        return direction;
     }
 
     public double getDx() {
@@ -69,7 +65,6 @@ public class Enemy extends BaseObject {
 
 
     public void attack(BaseObject o) {
-        // TODO: 13.08.2017
         // implement in override
     }
 
@@ -85,6 +80,7 @@ public class Enemy extends BaseObject {
         super(x, y, radius, health);
         this.visibility = visibility;
         excited = false;
+        targetAchieved = false;
     }
 
 }

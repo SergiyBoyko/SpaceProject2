@@ -98,15 +98,18 @@ public class Controller extends KeyAdapter implements MouseListener {
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             warrior.jump();
         }
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+        else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             warrior.moveLeft();
         }
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             warrior.moveRight();
         }
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             warrior.setDirection(0);
             warrior.stopMove();
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            warrior.shoot(this);
         }
 //        warrior.setWarriorFrames(setWarriorFrame());
         warrior.setWarriorFrames();

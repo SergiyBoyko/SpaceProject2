@@ -4,6 +4,7 @@ import com.company.controller.Controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by Serhii Boiko on 13.08.2017.
@@ -18,6 +19,12 @@ public class XenomorphEnemy extends Enemy {
         List<Integer> xenomorphFrame = new ArrayList<Integer>();
         xenomorphFrame.clear();
 
+        if (targetAchieved) {
+            for (int i = 6; i < 12; i++) {
+                xenomorphFrame.add(i);
+            }
+            xenomorphFrame.add(2);
+        }
         if (getDx() == 0) xenomorphFrame.add(2);
         else if (getDx() != 0) {
             xenomorphFrame.add(0);
@@ -29,14 +36,17 @@ public class XenomorphEnemy extends Enemy {
 
     @Override
     public void attack(BaseObject o) {
+        direction = x > o.getX() ? -1 : 1;
         if (x - 1 > o.getX()) {
+            targetAchieved = false;
             moveLeft();
-        }
-        else if (x + 1 < o.getX()) {
+        } else if (x + 1 < o.getX()) {
+            targetAchieved = false;
             moveRight();
-        }
-        else {
+        } else {
+            targetAchieved = true;
             stopMove();
+            o.takeDamage(0); // TODO: 14.08.2017 implement sometime
         }
     }
 
@@ -52,23 +62,39 @@ public class XenomorphEnemy extends Enemy {
 
     @Override
     public void move(Controller controller) {
-
         if (isExcited(controller.getWarrior())) {
             attack(controller.getWarrior());
         } else {
-            excited = false;
-            dx = 0;
+            Random r = new Random();
+            double random = r.nextInt(100);
+            if (random < 2) {
+                if ((int) (Math.random() * 2) == 0) {
+                    moveLeft();
+                } else moveRight();
+            } else if (random < 4) dx = 0;
+
         }
-        x = x + dx;
+        boolean changeMove = false;
+        x = x + dx * 10;
         if (!checkBorders(controller.getField()) || falling(controller.getField())) {
             x = x - dx;
-            dx = -1 * dx;
+            if (!excited) {
+                dx = -1 * dx;
+                direction = -1 * direction;
+                changeMove = true;
+            }
+        }
+        if (!changeMove) x = x - dx * 9;
+        else {
+            x = x + dx * 9;
+//            dx = 0;
         }
 
 //        System.out.println(oldDx + " " + dx);
+//        System.out.println(targetAchieved);
         if (oldDx != dx) {
             setXenomorphFrames();
-            System.out.println("change move " + objectFrames.size());
+//            System.out.println("change move " + dx +  ": " + objectFrames.size());
         }
         oldDx = dx;
     }
