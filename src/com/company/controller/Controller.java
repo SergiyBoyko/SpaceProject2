@@ -7,9 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -20,16 +18,28 @@ public class Controller extends KeyAdapter implements MouseListener {
     private Field field;
 
     private List<Enemy> enemies = new ArrayList<Enemy>();
+    private Map<Double, Double> bloodEffects = new HashMap<Double, Double>();
 
     private SpaceWarrior warrior;
-    private int tempX;
+    boolean gameOver;
+
+    public void gameOver() {
+        gameOver = true;
+    }
+
+    public Map<Double, Double> getBloodEffects() {
+        Map<Double, Double> temp = new HashMap<Double, Double>(bloodEffects);
+        bloodEffects.clear();
+//        System.out.println("size controller b=" + temp.size());
+        return temp;
+    }
+
+    public void addBlood(double x, double y) {
+        bloodEffects.put(x, y);
+    }
 
     public List<Enemy> getEnemies() {
         return enemies;
-    }
-
-    public int getTempX() {
-        return tempX;
     }
 
     public View getView() {
@@ -58,37 +68,39 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     public void run() {
         enemies.add(new XenomorphEnemy(20, 13));
+        gameOver = false;
+//        warrior.setWarriorFrames();
 
-//        warrior.setWarriorFrames(setWarriorFrame());
-        warrior.setWarriorFrames();
-
-        tempX = 0;
-        boolean onFloor = warrior.isOnFloor();
+//        boolean onFloor = warrior.isOnFloor();
 //        int dx = 1;
 
-        while (true) {
-            if (this.hasKeyEvents()) {
-                if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    sleep(500);
-                    if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        System.exit(0);
-                    } else {
-                        warrior = new SpaceWarrior(5, 1);
-//                        warrior.setWarriorFrames(setWarriorFrame());
-                        warrior.setWarriorFrames();
+        for (int i = 0; i < 10; i++) {
+            while (!gameOver) {
+                if (this.hasKeyEvents()) {
+                    if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        sleep(500);
+                        if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                            System.exit(0);
+                        } else {
+                            warrior = new SpaceWarrior(5, 1);
+                            enemies = new ArrayList<Enemy>();
+                            enemies.add(new XenomorphEnemy(20, 13));
+//                        enemies.add(new XenomorphEnemy(23, 13));
+//                        warrior.setWarriorFrames();
+                        }
                     }
                 }
-            }
-            if (onFloor != warrior.isOnFloor()) {
-//                warrior.setWarriorFrames(setWarriorFrame());
-                warrior.setWarriorFrames();
-                onFloor = warrior.isOnFloor();
-            }
+//            if (onFloor != warrior.isOnFloor()) {
+//                warrior.setWarriorFrames();
+//                onFloor = warrior.isOnFloor();
+//            }
 
-            view.repaint();
-            sleep(60);
-            moveAllItems();
+                view.repaint();
+                sleep(60);
+                moveAllItems();
+            }
         }
+        System.exit(0);
     }
 
     @Override
@@ -97,22 +109,22 @@ public class Controller extends KeyAdapter implements MouseListener {
         keyEvents.add(e);
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             warrior.jump();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            warrior.setWarriorFrames();
+        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             warrior.moveLeft();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             warrior.moveRight();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            warrior.setDirection(0);
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            warrior.crouch(true);
+//            warrior.setDirection(0);
             warrior.stopMove();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            warrior.setWarriorFrames();
+        } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             warrior.shoot(this);
+            warrior.setWarriorFrames();
         }
-//        warrior.setWarriorFrames(setWarriorFrame());
-        warrior.setWarriorFrames();
+//        warrior.setWarriorFrames();
+
     }
 
     @Override
@@ -126,9 +138,10 @@ public class Controller extends KeyAdapter implements MouseListener {
         if (e.getKeyCode() == KeyEvent.VK_LEFT
                 || e.getKeyCode() == KeyEvent.VK_RIGHT) {
             warrior.stopMove();
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            warrior.crouch(false);
         }
-//        warrior.setWarriorFrames(setWarriorFrame());
-        warrior.setWarriorFrames();
+//        warrior.setWarriorFrames();
     }
 
     @Override
@@ -165,8 +178,8 @@ public class Controller extends KeyAdapter implements MouseListener {
      */
     public void moveAllItems() {
         for (BaseObject object : getAllItems()) {
+            object.nextFrame(); // if first round < 0.5 (current 0.3)
             object.move(this);
-            object.nextFrame();
         }
     }
 

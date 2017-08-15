@@ -22,12 +22,18 @@ public abstract class BaseObject {
     //координаты
     protected double x;
     protected double y;
+    //вектор движения (-1 влево,+1 вправо,0 стоп)
+    protected double dx = 0;
+    //вектор движения (-1 влево,+1 вправо,0 стоп)
+    protected double oldDx = 0;
     //направление (-1 влево,+1 вправо,0 напротив)
     protected double direction = 0;
     //радиус объекта
     protected double radius;
     //очки жизни у объекта
+    private double maxHealth;
     protected double health;
+    protected double healthVector;
     //состояние объект - жив ли объект
     private boolean isAlive;
 
@@ -36,6 +42,7 @@ public abstract class BaseObject {
         this.y = y;
         this.radius = radius;
         this.health = health;
+        this.maxHealth = health;
         this.isAlive = true;
     }
 
@@ -69,8 +76,16 @@ public abstract class BaseObject {
 
 
     public void takeDamage(double damage) {
-        if (this.health - damage <= 0) this.die();
-        else this.health -= damage;
+        if (this.health - damage <= 0) {
+            this.health = 0;
+            this.die();
+//            System.err.println(this.getClass().getSimpleName() + " object die");
+        } else this.health -= damage;
+    }
+
+    public void riseHealth(double firstAid) {
+        if (health + firstAid > maxHealth) health = maxHealth;
+        else health += firstAid;
     }
 
     public double getHealth() {
@@ -81,11 +96,22 @@ public abstract class BaseObject {
         this.health = health;
     }
 
+    public double getMaxHealth() {
+        return maxHealth;
+    }
+
     /**
      * Двигаем себя на один ход.
      */
     public void move(Controller controller) {
         //do nothing
+    }
+
+    protected void checkHealthVector(Controller controller) {
+        if (healthVector > health) {
+            controller.addBlood(x, y);
+        }
+        healthVector = health;
     }
 
     /**

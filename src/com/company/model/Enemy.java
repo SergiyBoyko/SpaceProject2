@@ -5,9 +5,13 @@ package com.company.model;
  */
 public class Enemy extends BaseObject {
     //вектор движения (-1 влево,+1 вправо,0 стоп)
-    protected double dx = 0;
+//    protected double dx = 0;
     //вектор движения (-1 влево,+1 вправо,0 стоп)
-    protected double oldDx = 0;
+//    protected double oldDx = 0;
+    //разовый урон
+    protected double damage;
+    //последний цыкл кадров
+    protected boolean lastFrames = false;
     //дальность  обзора у объекта
     protected double visibility;
     //спокойный объект или атакует
@@ -28,7 +32,7 @@ public class Enemy extends BaseObject {
     }
 
     /**
-     * Возвращает контакт с объектом
+     * Возвращает контакт с объектом (видит или нет)
      */
     public boolean isExcited(BaseObject o) {
         double dx = x - o.x;
