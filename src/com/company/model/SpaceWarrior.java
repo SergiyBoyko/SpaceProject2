@@ -102,6 +102,7 @@ public class SpaceWarrior extends BaseObject {
         List<Integer> warriorFrame = new ArrayList<Integer>();
         warriorFrame.clear();
         if (!isAlive()) {
+            warriorFrame.add(23);
             for (int i = 16; i < 24; i++) {
                 warriorFrame.add(i);
                 warriorFrame.add(i);
@@ -259,6 +260,7 @@ public class SpaceWarrior extends BaseObject {
             setWarriorFrames();
         } else if (frameIterator <= 1){
             System.out.println("goodbye");
+            frameIterator = 15;
             controller.gameOver();
 //            controller.getEnemies().remove(this);
         }

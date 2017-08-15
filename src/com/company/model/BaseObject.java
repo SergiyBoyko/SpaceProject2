@@ -119,6 +119,7 @@ public abstract class BaseObject {
      */
     public boolean checkBorders(Field field) {
         char[][] stage = field.getStage();
+        if (y - 5 >  stage.length || y + 5 < 0 || x - 5 >  stage[0].length || x + 5 < 0) this.die();
         for (int i = 0; i < stage.length; i++) {
             for (int j = 0; j < stage[i].length; j++) {
                 // TODO: 13.08.2017 char array needed. part-ready

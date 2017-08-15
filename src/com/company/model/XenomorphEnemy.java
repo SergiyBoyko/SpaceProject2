@@ -57,7 +57,7 @@ public class XenomorphEnemy extends Enemy {
         } else if (x + 1.5 < o.getX()) {
             targetAchieved = false;
             moveRight();
-        } else {
+        } else if (Math.round(y) == Math.round(o.getY())) {
             targetAchieved = true;
             stopMove();
             o.takeDamage(damage); // TODO: 14.08.2017 implement sometime
@@ -126,7 +126,7 @@ public class XenomorphEnemy extends Enemy {
             lastFrames = true;
             frameIterator = 0.3;
             setXenomorphFrames();
-        } else if (frameIterator <= 0.3){
+        } else if (frameIterator <= 0.3) {
             System.out.println("goodbye");
             controller.getEnemies().remove(this);
         }

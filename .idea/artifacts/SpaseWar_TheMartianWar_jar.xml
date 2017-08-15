@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SpaseWar_TheMartianWar:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SpaseWar_TheMartianWar_jar</output-path>
+    <root id="archive" name="SpaseWar_TheMartianWar.jar">
+      <element id="module-output" name="SpaseWar_TheMartianWar" />
+    </root>
+  </artifact>
+</component>

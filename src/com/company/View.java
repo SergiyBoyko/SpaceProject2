@@ -125,6 +125,12 @@ public class View extends JPanel {
         paintEffects(g, offsetStableX, offsetStableY);
 
 
+        if (controller.isGameOver()) {
+            g.setColor(new Color(0xfff6bc));
+            g.setFont(new Font("Garamond", Font.BOLD | Font.ITALIC, 100));
+            g.drawString("GAME OVER", getWidth() / 2 - 300, getHeight() / 2);
+        }
+
 //        System.out.println( offsetCoors(controller.getWarrior().getX(), offsetStableX) / 42
 //                + " " + ((1280 / 256) * controller.getWarrior().getX()) / 100
 //                + " " + controller.getWarrior().getY());

@@ -27,6 +27,10 @@ public class Controller extends KeyAdapter implements MouseListener {
         gameOver = true;
     }
 
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
     public Map<Double, Double> getBloodEffects() {
         Map<Double, Double> temp = new HashMap<Double, Double>(bloodEffects);
         bloodEffects.clear();
@@ -68,39 +72,42 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     public void run() {
         enemies.add(new XenomorphEnemy(20, 13));
+        enemies.add(new XenomorphEnemy(7, 7));
+        enemies.add(new XenomorphEnemy(17, 7));
         gameOver = false;
 //        warrior.setWarriorFrames();
 
 //        boolean onFloor = warrior.isOnFloor();
 //        int dx = 1;
 
-        for (int i = 0; i < 10; i++) {
-            while (!gameOver) {
-                if (this.hasKeyEvents()) {
-                    if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        sleep(500);
-                        if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                            System.exit(0);
-                        } else {
-                            warrior = new SpaceWarrior(5, 1);
-                            enemies = new ArrayList<Enemy>();
-                            enemies.add(new XenomorphEnemy(20, 13));
+        while (!gameOver) {
+            if (this.hasKeyEvents()) {
+                if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    sleep(500);
+                    if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        System.exit(0);
+                    } else {
+                        warrior = new SpaceWarrior(5, 1);
+                        enemies = new ArrayList<Enemy>();
+                        enemies.add(new XenomorphEnemy(20, 13));
 //                        enemies.add(new XenomorphEnemy(23, 13));
 //                        warrior.setWarriorFrames();
-                        }
                     }
                 }
+            }
 //            if (onFloor != warrior.isOnFloor()) {
 //                warrior.setWarriorFrames();
 //                onFloor = warrior.isOnFloor();
-//            }
 
-                view.repaint();
-                sleep(60);
-                moveAllItems();
-            }
+            view.repaint();
+            sleep(60);
+            moveAllItems();
         }
-        System.exit(0);
+//        }
+        while (true) {
+            view.repaint();
+            if (hasKeyEvents()) System.exit(0);
+        }
     }
 
     @Override
