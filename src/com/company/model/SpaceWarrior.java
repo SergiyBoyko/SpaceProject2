@@ -11,6 +11,7 @@ import java.util.List;
 public class SpaceWarrior extends BaseObject {
     //вектор движения (-1 влево,+1 вправо,0 стоп)
 //    private double dx = 0;
+    // скорость передвижения
     private double speed = 0.2;
     //вектор движения (-1 влево,+1 вправо,0 стоп)
     private double dy = 0;
@@ -171,6 +172,7 @@ public class SpaceWarrior extends BaseObject {
      * присесть
      */
     public void crouch(boolean action) {
+        // need to be fixed
         if (onFloor) {
             crouched = action;
 //            System.out.println("crouch=" + action);
@@ -178,8 +180,13 @@ public class SpaceWarrior extends BaseObject {
             crouched = false;
         }
 
-        if (crouched) speed = 0.1;
-        else speed = 0.2;
+        if (crouched) {
+            speed = 0.1;
+        } else {
+            speed = 0.2;
+        }
+        if (dx > 0) moveRight();
+        else if (dx < 0) moveLeft();
     }
 
     /**
@@ -258,13 +265,12 @@ public class SpaceWarrior extends BaseObject {
             lastFrames = true;
             frameIterator = 1;
             setWarriorFrames();
-        } else if (frameIterator <= 1){
+        } else if (frameIterator <= 1) {
             System.out.println("goodbye");
             frameIterator = 15;
             controller.gameOver();
 //            controller.getEnemies().remove(this);
-        }
-        else System.out.println("iterator=" + frameIterator);
+        } else System.out.println("iterator=" + frameIterator);
     }
 
     private void reFrame() {
@@ -289,7 +295,8 @@ public class SpaceWarrior extends BaseObject {
             // warning was (y - 1)
             char[] barriers = field.getBarriers();
             for (int k = 0; k < barriers.length; k++) {
-                if (stage[(int) (y - 0.2)][(int) Math.round(x)] == barriers[k])
+                if (stage[(int) (y - 0.2)][(int) Math.round(x + 0.3)] == barriers[k] ||
+                        stage[(int) (y - 0.2)][(int) Math.round(x - 0.3)] == barriers[k])
                     return true;
             }
         }
@@ -316,7 +323,7 @@ public class SpaceWarrior extends BaseObject {
             for (int k = x; k > x + direction * 4 && k >= 0 && k != field.getWidth(); k += direction) {
 //                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
                 if (stage[y][k] == barriers[i]) { // y - 0.2
-                    shotRange = Math.abs(x - k) - 1;
+                    shotRange = Math.abs(x - k);
                     System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
                     return;
                 }

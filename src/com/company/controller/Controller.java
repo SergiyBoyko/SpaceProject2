@@ -90,7 +90,9 @@ public class Controller extends KeyAdapter implements MouseListener {
                         warrior = new SpaceWarrior(5, 1);
                         enemies = new ArrayList<Enemy>();
                         enemies.add(new XenomorphEnemy(20, 13));
-//                        enemies.add(new XenomorphEnemy(23, 13));
+                        enemies.add(new XenomorphEnemy(7, 7));
+                        enemies.add(new XenomorphEnemy(17, 7));
+//                        enemies.add(new XenomorphEnemy(4, 13));
 //                        warrior.setWarriorFrames();
                     }
                 }
@@ -124,7 +126,7 @@ public class Controller extends KeyAdapter implements MouseListener {
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             warrior.crouch(true);
 //            warrior.setDirection(0);
-            warrior.stopMove();
+//            warrior.stopMove();
             warrior.setWarriorFrames();
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             warrior.shoot(this);

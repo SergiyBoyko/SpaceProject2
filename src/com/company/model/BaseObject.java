@@ -119,7 +119,7 @@ public abstract class BaseObject {
      */
     public boolean checkBorders(Field field) {
         char[][] stage = field.getStage();
-        if (y - 5 >  stage.length || y + 5 < 0 || x - 5 >  stage[0].length || x + 5 < 0) this.die();
+        if (y - 5 > stage.length || y + 5 < 0 || x - 5 > stage[0].length || x + 5 < 0) this.die();
         for (int i = 0; i < stage.length; i++) {
             for (int j = 0; j < stage[i].length; j++) {
                 // TODO: 13.08.2017 char array needed. part-ready
@@ -127,7 +127,10 @@ public abstract class BaseObject {
                 for (int k = 0; k < barriers.length; k++) {
 
                     if (stage[i][j] == barriers[k]) {
-                        if ((i == Math.round(y)) && (j >= (x) - 0.8 && j <= (x) + 0.8)) {
+                        // warning it is very important moment below: if you change const 0.3 -
+                        // - change it in falling.
+                        if ((i == Math.round(y + 0.3) || i == Math.round(y - 0.3))
+                                && (j >= (x) - 0.8 && j <= (x) + 0.8)) { //0.8 best in this case
                             System.err.println("in Wall!!");
 //                        System.err.println("v=" + j + ":" + i + " you=" + (x - 1) * 0.05 + ":" + y);
                             System.err.printf("v=%d:%d you=%.2f:%.2f(yRound=%d)\n", j, i, x, y, Math.round(y));
@@ -145,10 +148,12 @@ public abstract class BaseObject {
      */
     public boolean falling(Field field) {
         char[][] stage = field.getStage();
-        if (stage.length > y + 1 && stage[0].length > x) {//(int) Math.round(x)
+        if (stage.length > y + 1 && stage[0].length > x + 1  //(int) Math.round(x)
+                && 0 <= y && 0 <= x) {
             //// TODO: 13.08.2017 check char array
             char[] barriers = field.getBarriers();
             for (int k = 0; k < barriers.length; k++) {
+                //before change read checkBorders method this class
                 if (stage[(int) y + 1][(int) Math.round(x + 0.3)] == barriers[k]
                         || stage[(int) y + 1][(int) Math.round(x - 0.3)] == barriers[k]) {
                     return false;

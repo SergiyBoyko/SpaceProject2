@@ -10,13 +10,13 @@ public class Enemy extends BaseObject {
 //    protected double oldDx = 0;
     //разовый урон
     protected double damage;
-    //последний цыкл кадров
+    //последний цикл кадров
     protected boolean lastFrames = false;
     //дальность  обзора у объекта
     protected double visibility;
     //спокойный объект или атакует
     protected boolean excited;
-    //
+    //объект в зоне досягаемости для нанесение урона
     protected boolean targetAchieved;
 
     public int getEnemyFrame() {

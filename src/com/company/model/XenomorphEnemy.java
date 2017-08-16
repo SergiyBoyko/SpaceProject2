@@ -14,7 +14,7 @@ public class XenomorphEnemy extends Enemy {
     public XenomorphEnemy(double x, double y) {
         super(x, y, 1, 5, 5);
         setXenomorphFrames();
-        damage = 0.1;
+        damage = 0.2;
     }
 
     public void setXenomorphFrames() {
@@ -50,6 +50,7 @@ public class XenomorphEnemy extends Enemy {
 
     @Override
     public void attack(BaseObject o) {
+        // need to be fixed
         direction = x > o.getX() ? -1 : 1;
         if (x - 1.5 > o.getX()) {
             targetAchieved = false;
