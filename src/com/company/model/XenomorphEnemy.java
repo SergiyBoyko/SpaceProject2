@@ -14,7 +14,7 @@ public class XenomorphEnemy extends Enemy {
     public XenomorphEnemy(double x, double y) {
         super(x, y, 1, 5, 5);
         setXenomorphFrames();
-        damage = 0.2;
+        damage = 0.15;
     }
 
     public void setXenomorphFrames() {
@@ -49,9 +49,21 @@ public class XenomorphEnemy extends Enemy {
     }
 
     @Override
+    public boolean isExcited(BaseObject o) {
+        double dx = x - o.x;
+        double dy = y - o.y;
+        double destination = Math.sqrt(dx * dx + dy * dy);
+
+        excited = (destination <= visibility)
+                && Math.round(y) == Math.round(o.getY());
+        return excited;
+    }
+
+    @Override
     public void attack(BaseObject o) {
         // need to be fixed
         direction = x > o.getX() ? -1 : 1;
+
         if (x - 1.5 > o.getX()) {
             targetAchieved = false;
             moveLeft();
@@ -90,6 +102,7 @@ public class XenomorphEnemy extends Enemy {
             if (isExcited(controller.getWarrior())) {
                 attack(controller.getWarrior());
             } else {
+                targetAchieved = false;
                 Random r = new Random();
                 double random = r.nextInt(100);
                 if (random < 2) {
@@ -103,7 +116,8 @@ public class XenomorphEnemy extends Enemy {
             // checkBorders
             boolean changeMove = false;
             x = x + dx * 10;
-            if (!checkBorders(controller.getField()) || falling(controller.getField())) {
+            if (!checkBorders(controller.getField(), controller.getBarrierSystems())
+                    || falling(controller.getField(), controller.getBarrierSystems())) {
                 x = x - dx;
                 if (!excited) {
                     dx = -1 * dx;

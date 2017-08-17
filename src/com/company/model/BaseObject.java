@@ -117,8 +117,8 @@ public abstract class BaseObject {
     /**
      * Проверяем - не вперся ли (x,y) в ограду.
      */
-    public boolean checkBorders(Field field) {
-        char[][] stage = field.getStage();
+    public boolean checkBorders(Field field, List<BarrierSystem> bs) {
+        char[][] stage = field.getStage(bs);
         if (y - 5 > stage.length || y + 5 < 0 || x - 5 > stage[0].length || x + 5 < 0) this.die();
         for (int i = 0; i < stage.length; i++) {
             for (int j = 0; j < stage[i].length; j++) {
@@ -131,9 +131,10 @@ public abstract class BaseObject {
                         // - change it in falling.
                         if ((i == Math.round(y + 0.3) || i == Math.round(y - 0.3))
                                 && (j >= (x) - 0.8 && j <= (x) + 0.8)) { //0.8 best in this case
-                            System.err.println("in Wall!!");
+//                            System.err.println("in Wall!!");
+//                            System.out.println(stage[i][j]);
 //                        System.err.println("v=" + j + ":" + i + " you=" + (x - 1) * 0.05 + ":" + y);
-                            System.err.printf("v=%d:%d you=%.2f:%.2f(yRound=%d)\n", j, i, x, y, Math.round(y));
+//                            System.err.printf("v=%d:%d you=%.2f:%.2f(yRound=%d)\n", j, i, x, y, Math.round(y));
                             return false;
                         }
                     }
@@ -146,8 +147,8 @@ public abstract class BaseObject {
     /**
      * Проверяем - не падает ли (x,y).
      */
-    public boolean falling(Field field) {
-        char[][] stage = field.getStage();
+    public boolean falling(Field field, List<BarrierSystem> bs) {
+        char[][] stage = field.getStage(bs);
         if (stage.length > y + 1 && stage[0].length > x + 1  //(int) Math.round(x)
                 && 0 <= y && 0 <= x) {
             //// TODO: 13.08.2017 check char array

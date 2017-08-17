@@ -23,6 +23,8 @@ public class SpaceWarrior extends BaseObject {
     private boolean onFloorLastTime;
     // координата y перед прыжком
     private double beforeJumpY;
+    // лезть по лестнице
+    private boolean climbing;
     // присесть
     private boolean crouched;
     private boolean crouchedLastTime;
@@ -56,13 +58,15 @@ public class SpaceWarrior extends BaseObject {
     public void shoot(Controller controller) {
         shot = true;
         crouch(false);
-        List<Enemy> enemies = new ArrayList<>(controller.getEnemies());
-        for (Enemy enemy : enemies) {
+        List<BaseObject> enemies = new ArrayList<>(controller.getEnemies());
+        enemies.addAll(controller.getBarrierSystems());
+        for (BaseObject enemy : enemies) {
             double dx = x - enemy.getX();
             double dy = y - enemy.getY();
             double destination = Math.sqrt(dx * dx + dy * dy);
             double destination2 = shotRange + enemy.getRadius();
-            if (destination < destination2) {
+            if (destination < destination2 && enemy.getX() > x*direction
+                    && Math.round(y) == Math.round(enemy.getY())) {
 //                System.out.println("damage catch");
 //                controller.addBlood(enemy);
                 enemy.takeDamage(damage); // TODO: 14.08.2017 implement sometime
@@ -79,22 +83,6 @@ public class SpaceWarrior extends BaseObject {
     public void setWarriorFrames(List<Integer> warriorFrames) {
         this.objectFrames = warriorFrames;
     }
-
-    //    public void setWarriorFrames() {
-//        List<Integer> warriorFrame = new ArrayList<Integer>();
-//        warriorFrame.clear();
-//        if (getDirection() != 0 && !isOnFloor()) warriorFrame.add(12);
-//        else if (getDirection() == 0 && getDx() == 0) warriorFrame.add(20);
-//        else if ((getDirection() > 0 || getDirection() < 0) && getDx() == 0)
-//            warriorFrame.add(21 + (int) (Math.random() * 2));
-//        else if (getDx() < 0 || getDx() > 0) {
-//            warriorFrame.add(2);
-//            warriorFrame.add(7);
-//            warriorFrame.add(12);
-//            warriorFrame.add(17);
-//        }
-//        objectFrames = warriorFrame;
-//    }
 
     /**
      * Устанавливает нужный массив кадров
@@ -113,12 +101,8 @@ public class SpaceWarrior extends BaseObject {
         else if (crouched) {
             if (getDx() == 0) warriorFrame.add(13);
             else {
-//                warriorFrame.add(13);
-//                warriorFrame.add(13);
                 warriorFrame.add(14);
                 warriorFrame.add(14);
-//                warriorFrame.add(13);
-//                warriorFrame.add(13);
                 warriorFrame.add(15);
                 warriorFrame.add(15);
             }
@@ -192,6 +176,29 @@ public class SpaceWarrior extends BaseObject {
     /**
      * Устанавливаем вектор движения вверх
      */
+    public void up(Field field) {
+        char[][] stage = field.getStage();
+        if (stage[(int) Math.round(y - 0.5)][(int) Math.round(x)] == 'm') {
+            climb(true);
+        } else {
+            climb(false);
+            jump();
+        }
+    }
+
+    public void climb(boolean action) {
+        if (climbing == action) return;
+//        System.out.println("climb request " + action);
+        if (!action) {
+            climbing = false;
+            dy = 0;
+        } else {
+//            jumped = false;
+            climbing = true;
+            dy = -0.25;
+        }
+    }
+
     public void jump() {
         if (jumped || !onFloor) return;
         this.beforeJumpY = y;
@@ -219,12 +226,22 @@ public class SpaceWarrior extends BaseObject {
 
     private boolean shotContinue = false;
 
+    private void checkLevelComplete(Controller controller) {
+        char[][] stage = controller.getStage();
+        try {
+            if (stage[(int) Math.round(y)][(int) Math.round(x)] == 'f')
+                controller.levelComplete();
+        } catch (Exception ignored) {}
+    }
+
     @Override
     public void move(Controller controller) {
+//        System.out.println(climbing);
         if (isAlive()) {
+            checkLevelComplete(controller);
             checkHealthVector(controller);
             checkShotRange(controller.getField());
-            riseHealth(0.001);
+            riseHealth(0.002);
 
             // shot interrupt
             if (shotContinue) setWarriorFrames();
@@ -233,27 +250,41 @@ public class SpaceWarrior extends BaseObject {
             // end shot interrupt
 
             // make current move (jump, fall, move l/r, nothing)
-            double step = dx;
-            onFloor = !falling(controller.getField());
+            double xStep = dx;
+            double yStep = dy;
+            onFloor = !falling(controller.getField(), controller.getBarrierSystems())
+                    || climbing;
             if (jumped) {
 //            System.out.println("jump");
                 if (beforeJumpY - 2 < y && !jumpInterrupted(controller.getField())) { // 2 - highest point of jumping
-                    y += dy;
-                    step = dx;
-                } else jumped = false;
+                    yStep = dy;
+                    xStep = dx;
+                } else {
+                    yStep = 0;
+                    jumped = false;
+                }
             } else if (!onFloor) {
-                crouch(false);
 //            System.out.println("fall");
-                y += 0.25;
-                step = dx / 2;
+                crouch(false);
+                dy = 0.25;
+                yStep = dy;
+                xStep = dx / 2;
             } else {
-//            System.out.println("moving");
-                step = dx;
+                xStep = dx;
+                if (!climbing) {
+//                    System.out.println("moving");
+                    yStep = 0;
+                }
+                else {
+//                    System.out.println("climbing");
+                    up(controller.getField());
+                }
             }
-            x += step;
+            y += yStep;
+            x += xStep;
 //        System.out.println("dx=" + dx);
-            if (!checkBorders(controller.getField())) {
-                x -= step;
+            if (!checkBorders(controller.getField(), controller.getBarrierSystems())) {
+                x -= xStep;
             }
 
             // reFrame if needed
@@ -295,6 +326,7 @@ public class SpaceWarrior extends BaseObject {
             // warning was (y - 1)
             char[] barriers = field.getBarriers();
             for (int k = 0; k < barriers.length; k++) {
+                // 0.3 is important (first visit BaseObject class)
                 if (stage[(int) (y - 0.2)][(int) Math.round(x + 0.3)] == barriers[k] ||
                         stage[(int) (y - 0.2)][(int) Math.round(x - 0.3)] == barriers[k])
                     return true;
@@ -320,7 +352,7 @@ public class SpaceWarrior extends BaseObject {
         char[] barriers = field.getBarriers();
         if (y < 0 || y > field.getHeight() - 1) return;
         for (int i = 0; i < barriers.length; i++) {
-            for (int k = x; k > x + direction * 4 && k >= 0 && k != field.getWidth(); k += direction) {
+            for (int k = x; k > x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
 //                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
                 if (stage[y][k] == barriers[i]) { // y - 0.2
                     shotRange = Math.abs(x - k);
@@ -328,22 +360,23 @@ public class SpaceWarrior extends BaseObject {
                     return;
                 }
             }
-            for (int k = x; k < x + direction * 4 && k >= 0 && k != field.getWidth(); k += direction) {
+            for (int k = x; k < x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
 //                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
                 if (stage[y][k] == barriers[i]) { // y - 0.2
-                    shotRange = Math.abs(x - k) - 1;
+                    shotRange = Math.abs(x - k);
                     System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
                     return;
                 }
             }
         }
-        shotRange = 3;
+        shotRange = 2;
     }
 
     public SpaceWarrior(double x, double y) {
-        super(x, y, 0.5, 10);
+        super(x, y, 0.5, 15);
         jumped = false;
-        shotRange = 3;
+        climbing = false;
+        shotRange = 2;
         damage = 0.5;
         setWarriorFrames();
     }

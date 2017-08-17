@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.controller.Controller;
+import com.company.model.BarrierSystem;
 import com.company.model.Enemy;
 import com.company.model.XenomorphEnemy;
 
@@ -24,12 +25,14 @@ public class View extends JPanel {
 
     private BufferedImage background;
     private List<BufferedImage> horizontalPlatforms1;
-    private BufferedImage platformVertical1;
+    private List<BufferedImage> verticalPlatforms1;
 //    private BufferedImage platformVertical1;
 
-
-    // The above line throws an checked IOException which must be caught.
     private Image greenBlood;
+
+    private List<BufferedImage> plazmaBarrier;
+    private List<BufferedImage> generator;
+
     private BufferedImage[] playerSprites;
     private BufferedImage[] dAlienSprites;
 
@@ -54,12 +57,23 @@ public class View extends JPanel {
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/m_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_floor_platform.png")));
-        platformVertical1 = ImageIO.read(new File("sources/images/decoration/wall_platform.png"));
+        verticalPlatforms1 = new ArrayList<BufferedImage>();
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_wall_platform.png")));
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_wall_platform.png")));
+//        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.gif")));
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.png")));
+        verticalPlatforms1.add(mirror(ImageIO.read(new File("sources/images/decoration/ladder_platform.png"))));
+        generator = new ArrayList<>();
+        generator.add(ImageIO.read(new File("sources/images/control/generator_b.png")));
+        generator.add(ImageIO.read(new File("sources/images/control/generator_unb.png")));
+        plazmaBarrier = new ArrayList<>();
+        plazmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_unl.png")));
+        plazmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_l.png")));
         greenBlood = ImageIO.read(new File("sources/images/effects/blood_g.png"));
-        int rows;
-        int cols;
-        int width;
-        int height;
+//        int rows;
+//        int cols;
+//        int width;
+//        int height;
 //        BufferedImage playerSheet = ImageIO.read(new File("sources/images/player/sheet_doom.gif"));
 //        int rows = 6;
 //        int cols = 9;
@@ -120,10 +134,17 @@ public class View extends JPanel {
 //        int offx;
 //        int offy;
         paintStage(g, offsetStableX, offsetStableY);
+        paintBGE(g, offsetStableX, offsetStableY);
         paintEnemies(g, offsetStableX, offsetStableY);
         paintPlayer(g, offsetStableX, offsetStableY);
         paintEffects(g, offsetStableX, offsetStableY);
 
+
+        if (controller.isLevelComplete()) {
+            g.setColor(new Color(0xfff6bc));
+            g.setFont(new Font("Garamond", Font.BOLD | Font.ITALIC, 100));
+            g.drawString("Demo Level Complete", getWidth() / 2 - 400, getHeight() / 2);
+        }
 
         if (controller.isGameOver()) {
             g.setColor(new Color(0xfff6bc));
@@ -184,6 +205,25 @@ public class View extends JPanel {
         }
     }
 
+    private void paintBGE(Graphics g, int offsetStableX, int offsetStableY) {
+        int offx;
+        int offy;
+
+        List<BarrierSystem> barrierSystems = new ArrayList<>(controller.getBarrierSystems());
+        for (BarrierSystem bs : barrierSystems) {
+            int locked = bs.isAlive() ? 1 : 0;
+            offx = (int) (offsetCoors(bs.getX(), offsetStableX) - 50 / 2);
+            offy = (int) (offsetCoors(bs.getY(), offsetStableY) - 50 / 2);
+            g.drawImage(generator.get(locked), offx, offy, 50, 50, this);
+            List<BarrierSystem.Barrier> barriers = bs.getBarriers();
+            for (BarrierSystem.Barrier barrier : barriers) {
+                offx = (int) (offsetCoors(barrier.getX(), offsetStableX) - 50 / 2);
+                offy = (int) (offsetCoors(barrier.getY(), offsetStableY));
+                g.drawImage(plazmaBarrier.get(locked), offx, offy, 50, 50, this);
+            }
+        }
+    }
+
     private void paintEffects(Graphics g, int offsetStableX, int offsetStableY) {
         int offx;
         int offy;
@@ -220,8 +260,10 @@ public class View extends JPanel {
         if (controller.getWarrior().isAlive()) {
             Color c = g.getColor();
             // health bar
-            if (controller.getWarrior().getHealth() < 4) g.setColor(Color.red);
-            else if (controller.getWarrior().getHealth() < 7) g.setColor(Color.yellow);
+            if (controller.getWarrior().getHealth() < 0.4 * controller.getWarrior().getMaxHealth())
+                g.setColor(Color.red);
+            else if (controller.getWarrior().getHealth() < 0.7 * controller.getWarrior().getMaxHealth())
+                g.setColor(Color.yellow);
             else g.setColor(Color.green);
             g.drawLine(offx, offy - 15,
                     (int) (offx + controller.getWarrior().getHealth()
@@ -246,27 +288,32 @@ public class View extends JPanel {
         char[][] mapDec = controller.getStage();
         for (int i = 0; i < mapDec.length; i++) {
             for (int j = 0; j < mapDec[0].length; j++) {
-                g.setFont(new Font("Arial", Font.BOLD, 12));
+//                g.setFont(new Font("Arial", Font.BOLD, 12));
 //                g.drawString(j + ":" + i,
 //                        (int) offsetCoors(j, 1280 / 30),(int) offsetCoors(i, offsetStableY)-20);
 //                g.drawString( (int)offsetCoors(j, offsetStableX) + ":" + (int)offsetCoors(i, offsetStableY),
 //                        (int) offsetCoors(j, offsetStableX),(int) offsetCoors(i, offsetStableY));
-                if (mapDec[i][j] == 'l') {
+                char el = mapDec[i][j];
+                if (el == 'l' || el == 's' || el == 'e') {
                     offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
                     offy = (int) (offsetCoors(i, offsetStableY)) - 30;
-                    g.drawImage(horizontalPlatforms1.get(1), offx, offy, 50, 100, this);
-                } else if (mapDec[i][j] == 's') {
-                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
-                    offy = (int) (offsetCoors(i, offsetStableY)) - 30;
-                    g.drawImage(horizontalPlatforms1.get(0), offx, offy, 50, 100, this);
-                } else if (mapDec[i][j] == 'e') {
-                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
-                    offy = (int) (offsetCoors(i, offsetStableY)) - 30;
-                    g.drawImage(horizontalPlatforms1.get(2), offx, offy, 50, 100, this);
-                } else if (mapDec[i][j] == 'v') {
+                    Image image = el == 'l' ? horizontalPlatforms1.get(1)
+                            : el == 's' ? horizontalPlatforms1.get(0)
+                            : horizontalPlatforms1.get(2);
+                    g.drawImage(image, offx, offy, 50, 100, this);
+                } else if (el == 'v' || el == 'd') {
+//                    offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
                     offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
                     offy = (int) offsetCoors(i, offsetStableY);
-                    g.drawImage(platformVertical1, offx, offy, 100, 50, this);
+                    g.drawImage(verticalPlatforms1.get(1), offx, offy, 100, 50, this);
+                    if (el == 'v') g.drawImage(verticalPlatforms1.get(0), offx, offy, 100, 50, this);
+
+                } else if (mapDec[i][j] == 'm') {
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 80 / 2;
+                    offy = (int) offsetCoors(i, offsetStableY) - 15;
+//                    g.drawImage(verticalPlatforms1.get(0), offx, offy, 100, 50, this);
+                    if (controller.isLadder()) g.drawImage(verticalPlatforms1.get(2), offx, offy, 80, 75, this);
+                    else g.drawImage(verticalPlatforms1.get(3), offx, offy, 80, 75, this);
                 }
             }
         }

@@ -19,9 +19,19 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     private List<Enemy> enemies = new ArrayList<Enemy>();
     private Map<Double, Double> bloodEffects = new HashMap<Double, Double>();
+    private List<BarrierSystem> barrierSystems;
 
     private SpaceWarrior warrior;
-    boolean gameOver;
+    private boolean gameOver;
+    private boolean levelComplete;
+
+    public boolean isLevelComplete() {
+        return levelComplete;
+    }
+
+    public void levelComplete() {
+        this.levelComplete = true;
+    }
 
     public void gameOver() {
         gameOver = true;
@@ -46,6 +56,10 @@ public class Controller extends KeyAdapter implements MouseListener {
         return enemies;
     }
 
+    public List<BarrierSystem> getBarrierSystems() {
+        return barrierSystems;
+    }
+
     public View getView() {
         return view;
     }
@@ -67,49 +81,83 @@ public class Controller extends KeyAdapter implements MouseListener {
     public Controller() {
         view = new View(this);
         field = new Field(0);
-        warrior = new SpaceWarrior(5, 1); // x, y
+        barrierSystems = field.getBarrierSystems();
+        warrior = new SpaceWarrior(4, 12); // x, y
+    }
+    private boolean ladder;
+
+    public boolean isLadder() {
+        return ladder;
+    }
+    private void animationLadder() {
+        ladder = false;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        sleep(250);
+                        ladder = !ladder;
+                    }
+                } catch (Exception e) {
+                    System.err.println("animation interrupted");
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void run() {
-        enemies.add(new XenomorphEnemy(20, 13));
-        enemies.add(new XenomorphEnemy(7, 7));
-        enemies.add(new XenomorphEnemy(17, 7));
+        enemies = field.getEnemies();
         gameOver = false;
+        levelComplete = false;
+        animationLadder();
 //        warrior.setWarriorFrames();
 
 //        boolean onFloor = warrior.isOnFloor();
 //        int dx = 1;
 
-        while (!gameOver) {
-            if (this.hasKeyEvents()) {
-                if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    sleep(500);
-                    if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        System.exit(0);
-                    } else {
-                        warrior = new SpaceWarrior(5, 1);
-                        enemies = new ArrayList<Enemy>();
-                        enemies.add(new XenomorphEnemy(20, 13));
-                        enemies.add(new XenomorphEnemy(7, 7));
-                        enemies.add(new XenomorphEnemy(17, 7));
-//                        enemies.add(new XenomorphEnemy(4, 13));
-//                        warrior.setWarriorFrames();
-                    }
-                }
-            }
+        while (!levelComplete) {
+            while (!gameOver) {
+                reExitSystem();
 //            if (onFloor != warrior.isOnFloor()) {
 //                warrior.setWarriorFrames();
 //                onFloor = warrior.isOnFloor();
 
+                view.repaint();
+                sleep(60);
+                moveAllItems();
+            }
             view.repaint();
-            sleep(60);
-            moveAllItems();
+            reExitSystem();
         }
-//        }
         while (true) {
             view.repaint();
             if (hasKeyEvents()) System.exit(0);
         }
+    }
+
+    private void reExitSystem() {
+        if (this.hasKeyEvents()) {
+            if (this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                sleep(500);
+                if (this.hasKeyEvents() && this.getEventFromTop().getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.exit(0);
+                } else {
+                    restart();
+//                        warrior.setWarriorFrames();
+                }
+            }
+        }
+    }
+
+    private void restart() {
+        warrior = new SpaceWarrior(4, 12);
+        enemies = field.getEnemies();
+        barrierSystems = field.getBarrierSystems();
+        levelComplete = false;
+        gameOver = false;
     }
 
     @Override
@@ -117,7 +165,8 @@ public class Controller extends KeyAdapter implements MouseListener {
 //        System.out.print(e.getKeyChar());
         keyEvents.add(e);
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            warrior.jump();
+//            warrior.jump();
+            warrior.up(field);
             warrior.setWarriorFrames();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             warrior.moveLeft();
@@ -149,6 +198,8 @@ public class Controller extends KeyAdapter implements MouseListener {
             warrior.stopMove();
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             warrior.crouch(false);
+        } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+            warrior.climb(false);
         }
 //        warrior.setWarriorFrames();
     }
@@ -215,6 +266,7 @@ public class Controller extends KeyAdapter implements MouseListener {
         ArrayList<BaseObject> list = new ArrayList<BaseObject>();
         list.add(warrior);
         list.addAll(enemies);
+        list.addAll(barrierSystems);
 //        list.addAll(ufos);
 //        list.addAll(bombs);
 //        list.addAll(rockets);
