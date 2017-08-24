@@ -18,12 +18,18 @@ public class Controller extends KeyAdapter implements MouseListener {
     private Field field;
 
     private List<Enemy> enemies = new ArrayList<Enemy>();
+    private List<Missile> missiles = new ArrayList<Missile>();
     private Map<Double, Double> bloodEffects = new HashMap<Double, Double>();
     private List<BarrierSystem> barrierSystems;
 
     private SpaceWarrior warrior;
     private boolean gameOver;
     private boolean levelComplete;
+    private int level;
+
+    public int getLevel() {
+        return level;
+    }
 
     public boolean isLevelComplete() {
         return levelComplete;
@@ -50,6 +56,14 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     public void addBlood(double x, double y) {
         bloodEffects.put(x, y);
+    }
+
+    public void addMissile (double x, double y, double direction) {
+        missiles.add(new Missile(x, y, direction));
+    }
+
+    public List<Missile> getMissiles() {
+        return missiles;
     }
 
     public List<Enemy> getEnemies() {
@@ -80,7 +94,9 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     public Controller() {
         view = new View(this);
-        field = new Field(0);
+//        field = new Field(0);
+        field = new Field(1);
+        level = 1;
         barrierSystems = field.getBarrierSystems();
         warrior = new SpaceWarrior(4, 12); // x, y
     }
@@ -155,6 +171,7 @@ public class Controller extends KeyAdapter implements MouseListener {
     private void restart() {
         warrior = new SpaceWarrior(4, 12);
         enemies = field.getEnemies();
+        missiles.clear();
         barrierSystems = field.getBarrierSystems();
         levelComplete = false;
         gameOver = false;
@@ -180,6 +197,8 @@ public class Controller extends KeyAdapter implements MouseListener {
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             warrior.shoot(this);
             warrior.setWarriorFrames();
+        } else if (e.getKeyCode() == KeyEvent.VK_1 || e.getKeyCode() == KeyEvent.VK_2) {
+            warrior.rearm(Integer.parseInt(String.valueOf(e.getKeyChar())));
         }
 //        warrior.setWarriorFrames();
 
@@ -267,6 +286,7 @@ public class Controller extends KeyAdapter implements MouseListener {
         list.add(warrior);
         list.addAll(enemies);
         list.addAll(barrierSystems);
+        list.addAll(missiles);
 //        list.addAll(ufos);
 //        list.addAll(bombs);
 //        list.addAll(rockets);

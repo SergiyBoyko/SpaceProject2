@@ -7,46 +7,45 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Created by Serhii Boiko on 13.08.2017.
+ * Created by Serhii Boiko on 20.08.2017.
  */
-public class XenomorphEnemy extends Enemy {
+public class GorillaEnemy extends Enemy {
+    private static final double EXCITED_SPEED = 0.2;
+    private static final double NORMAL_SPEED = 0.1;
 
-    public XenomorphEnemy(double x, double y) {
-        super(x, y, 1, 5, 5);
-        setXenomorphFrames();
-        damage = 0.15;
-        speed = 0.1;
+
+    public GorillaEnemy(double x, double y) {
+        super(x, y, 1, 3.5, 7);
+        setGorillaFrames();
+        damage = 0.25;
+        speed = NORMAL_SPEED;
     }
 
-    public void setXenomorphFrames() {
-        List<Integer> xenomorphFrame = new ArrayList<Integer>();
-        xenomorphFrame.clear();
+    public void setGorillaFrames() {
+        List<Integer> gorillaFrame = new ArrayList<Integer>();
+        gorillaFrame.clear();
 
         if (!isAlive()) {
-            xenomorphFrame.add(2);
-            xenomorphFrame.add(2);
-            xenomorphFrame.add(16);
-            xenomorphFrame.add(16);
-            xenomorphFrame.add(2);
-            xenomorphFrame.add(17);
-            xenomorphFrame.add(17);
-            xenomorphFrame.add(17);
-            xenomorphFrame.add(5);
-            xenomorphFrame.add(5);
-            xenomorphFrame.add(5);
+            gorillaFrame.add(1);
+            gorillaFrame.add(1);
+            gorillaFrame.add(10);
+            gorillaFrame.add(13);
+            gorillaFrame.add(14);
+            gorillaFrame.add(14);
+            gorillaFrame.add(16);
+            gorillaFrame.add(16);
+            gorillaFrame.add(16);
         } else if (targetAchieved) {
-            for (int i = 6; i < 12; i++) {
-                xenomorphFrame.add(i);
+            for (int i = 5; i < 13; i++) {
+                gorillaFrame.add(i);
             }
-            xenomorphFrame.add(2);
-            xenomorphFrame.add(2);
-        } else if (getDx() == 0) xenomorphFrame.add(2);
+        } else if (getDx() == 0) gorillaFrame.add(1);
         else if (getDx() != 0) {
-            xenomorphFrame.add(0);
-            xenomorphFrame.add(1);
+            gorillaFrame.add(0);
+            gorillaFrame.add(2);
 //            xenomorphFrame.add(2);
         }
-        objectFrames = xenomorphFrame;
+        objectFrames = gorillaFrame;
     }
 
     @Override
@@ -56,7 +55,9 @@ public class XenomorphEnemy extends Enemy {
         double destination = Math.sqrt(dx * dx + dy * dy);
 
         excited = (destination <= visibility)
-                && Math.round(y) == Math.round(o.getY());
+                && (Math.round(y + 1) == Math.round(o.getY())
+                || Math.round(y) == Math.round(o.getY())
+                || (Math.round(y - 1) == Math.round(o.getY())));
         return excited;
     }
 
@@ -65,19 +66,17 @@ public class XenomorphEnemy extends Enemy {
         // need to be fixed
         direction = x > o.getX() ? -1 : 1;
 
-        if (x - 1.5 > o.getX()) {
+        if (x - 2 > o.getX()) {
             targetAchieved = false;
             moveLeft();
-        } else if (x + 1.5 < o.getX()) {
+        } else if (x + 2 < o.getX()) {
             targetAchieved = false;
             moveRight();
         } else if (Math.round(y) == Math.round(o.getY())) {
             targetAchieved = true;
-            System.out.println();
             stopMove();
             o.takeDamage(damage); // TODO: 14.08.2017 implement sometime
         }
-//        System.out.println("x " + targetAchieved);
     }
 
     @Override
@@ -96,8 +95,8 @@ public class XenomorphEnemy extends Enemy {
             checkHealthVector(controller);
             //joke and delete
 //            boolean enemyExcited = false;
-//            for (Enemy enemy: controller.getEnemies()) {
-//            if (!(enemy instanceof XenomorphEnemy) && isExcited(enemy)) {
+//        for (Enemy enemy: controller.getEnemies()) {
+//            if (!(enemy instanceof GorillaEnemy) && isExcited(enemy)) {
 //                enemyExcited = excited;
 //                attack(enemy);
 //            }
@@ -106,8 +105,10 @@ public class XenomorphEnemy extends Enemy {
 //            if (!enemyExcited)
             //keep calm or excited
             if (isExcited(controller.getWarrior())) {
+                speed = EXCITED_SPEED;
                 attack(controller.getWarrior());
             } else {
+                speed = NORMAL_SPEED;
                 targetAchieved = false;
                 Random r = new Random();
                 double random = r.nextInt(100);
@@ -137,8 +138,12 @@ public class XenomorphEnemy extends Enemy {
 //            dx = 0;
             }
 
+//            System.out.println("g "+ dx);
             // reFrame if it needed
-            if (oldDx != dx) setXenomorphFrames();
+
+            if (oldDx != dx) {
+                setGorillaFrames();
+            }
             oldDx = dx;
 
             //die
@@ -146,7 +151,7 @@ public class XenomorphEnemy extends Enemy {
 //            System.out.println("last Frames begin");
             lastFrames = true;
             frameIterator = 0.3;
-            setXenomorphFrames();
+            setGorillaFrames();
         } else if (frameIterator <= 0.3) {
             System.out.println("goodbye");
             controller.getEnemies().remove(this);

@@ -4,6 +4,8 @@ import com.company.controller.Controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Serhii Boiko on 11.08.2017.
@@ -34,8 +36,27 @@ public class SpaceWarrior extends BaseObject {
     private double shotRange;
     //разовый урон
     private double damage;
-    //последний цыкл кадров
+    //последний цикл кадров
     private boolean lastFrames = false;
+    //armed
+    private Map<Weapon, Integer> ammunition = new TreeMap<>();
+    private Weapon weapon;
+    // ready to fire (reloaded)
+    private boolean reloaded = true;
+
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    public void rearm(int i) {
+        if (i < 1) return;
+        if (ammunition.size() > i - 1) {
+            for (Weapon w : ammunition.keySet()) {
+                i--;
+                if (i == 0) weapon = w;
+            }
+        }
+    }
 
     public double getDirectedShotRange() {
         return shotRange * direction;
@@ -55,9 +76,37 @@ public class SpaceWarrior extends BaseObject {
 //        System.out.println(frameIterator);
     }
 
+    private void reloading() {
+        reloaded = false;
+        if (weapon == Weapon.RPG) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(3000); // 3 sec rating
+                        reloaded = true;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+            thread.setDaemon(true);
+            thread.start();
+        }
+    }
+
     public void shoot(Controller controller) {
+        if (!reloaded) return;
         shot = true;
         crouch(false);
+
+        if (weapon == Weapon.RPG) {
+            controller.addMissile(x + direction, y, direction);
+            reloading();
+            return;
+        }
+
         List<BaseObject> enemies = new ArrayList<>(controller.getEnemies());
         enemies.addAll(controller.getBarrierSystems());
         for (BaseObject enemy : enemies) {
@@ -65,7 +114,7 @@ public class SpaceWarrior extends BaseObject {
             double dy = y - enemy.getY();
             double destination = Math.sqrt(dx * dx + dy * dy);
             double destination2 = shotRange + enemy.getRadius();
-            if (destination < destination2 && enemy.getX() > x*direction
+            if (destination < destination2 && direction > 0 ? enemy.getX() > x : enemy.getX() < x
                     && Math.round(y) == Math.round(enemy.getY())) {
 //                System.out.println("damage catch");
 //                controller.addBlood(enemy);
@@ -78,10 +127,6 @@ public class SpaceWarrior extends BaseObject {
 
     public int getPlayerFrame() {
         return objectFrame;
-    }
-
-    public void setWarriorFrames(List<Integer> warriorFrames) {
-        this.objectFrames = warriorFrames;
     }
 
     /**
@@ -231,7 +276,8 @@ public class SpaceWarrior extends BaseObject {
         try {
             if (stage[(int) Math.round(y)][(int) Math.round(x)] == 'f')
                 controller.levelComplete();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -274,10 +320,10 @@ public class SpaceWarrior extends BaseObject {
                 if (!climbing) {
 //                    System.out.println("moving");
                     yStep = 0;
-                }
-                else {
+                } else {
 //                    System.out.println("climbing");
                     up(controller.getField());
+
                 }
             }
             y += yStep;
@@ -321,7 +367,7 @@ public class SpaceWarrior extends BaseObject {
         char[][] stage = field.getStage();
 //        System.out.printf("falling: x=%d, y=%.2f field: x=%d, y=%d",
 //          (int) Math.round(x * 0.05), y, stage[0].length, stage.length);
-        if (stage.length > y - 1 && stage[0].length > (int) Math.round(x)) {
+        if (stage.length > y - 1 && stage[0].length > (int) Math.round(x) && y > 0) {
 //            System.out.println("\n under you: " + stage[(int) y + 1][(int) Math.round(x)]);
             // warning was (y - 1)
             char[] barriers = field.getBarriers();
@@ -345,31 +391,49 @@ public class SpaceWarrior extends BaseObject {
 
     private void checkShotRange(Field field) {
         // the worst implement
+        if (direction == 0) return;
         char[][] stage = field.getStage();
         int y = (int) Math.round(this.y);
         int x = (int) Math.round(this.x);
+        double range = 2;
+        if (crouched) range += 0.5;
 
         char[] barriers = field.getBarriers();
         if (y < 0 || y > field.getHeight() - 1) return;
         for (int i = 0; i < barriers.length; i++) {
-            for (int k = x; k > x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
-//                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
-                if (stage[y][k] == barriers[i]) { // y - 0.2
-                    shotRange = Math.abs(x - k);
-                    System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
-                    return;
+            for (double j = x; directDepend(j); j += 1 * direction) {
+                if (stage[0].length - 1 < j || j < 0) {
+                    range = Math.abs(x - j) - 0.5;
+                    break;
+                } else if (stage[y][(int) j] == barriers[i]) {
+                    range = Math.abs(x - j) - 0.5;
+                    break;
                 }
             }
-            for (int k = x; k < x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
-//                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
-                if (stage[y][k] == barriers[i]) { // y - 0.2
-                    shotRange = Math.abs(x - k);
-                    System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
-                    return;
-                }
-            }
+
+//            for (int k = x; k > x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
+////                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
+//                if (stage[y][k] == barriers[i]) { // y - 0.2
+//                    shotRange = Math.abs(x - k);
+//                    System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
+//                    return;
+//                }
+//            }
+//            for (int k = x; k < x + direction * 2 && k >= 0 && k != field.getWidth(); k += direction) {
+////                System.out.print("y=" + y + " x=" + k + " " + stage[y][k] + " ");
+//                if (stage[y][k] == barriers[i]) { // y - 0.2
+//                    shotRange = Math.abs(x - k);
+//                    System.out.println("cut range " + " " + (Math.abs(x - k) - 1));
+//                    return;
+//                }
+//            }
         }
-        shotRange = 2;
+        shotRange = range;
+    }
+
+    private boolean directDepend(double j) {
+        if (direction > 0) return j <= x + direction * 2;
+        else return j >= x + direction * 2;
     }
 
     public SpaceWarrior(double x, double y) {
@@ -378,6 +442,9 @@ public class SpaceWarrior extends BaseObject {
         climbing = false;
         shotRange = 2;
         damage = 0.5;
+        ammunition.put(Weapon.PISTOL, -1);
+        ammunition.put(Weapon.RPG, 5);
+        weapon = Weapon.RPG;
         setWarriorFrames();
     }
 

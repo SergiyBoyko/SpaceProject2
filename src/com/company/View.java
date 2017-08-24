@@ -1,9 +1,8 @@
 package com.company;
 
 import com.company.controller.Controller;
-import com.company.model.BarrierSystem;
-import com.company.model.Enemy;
-import com.company.model.XenomorphEnemy;
+import com.company.model.*;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -23,18 +22,22 @@ public class View extends JPanel {
     private static final int WIDTH_SCREEN_SIZE = 1280;
     private static final int HEIGHT_SCREEN_SIZE = 720;
 
-    private BufferedImage background;
+    private List<BufferedImage> background;
     private List<BufferedImage> horizontalPlatforms1;
     private List<BufferedImage> verticalPlatforms1;
 //    private BufferedImage platformVertical1;
 
     private Image greenBlood;
+    private Image playerAim;
 
-    private List<BufferedImage> plazmaBarrier;
+    private List<BufferedImage> plasmaBarrier;
     private List<BufferedImage> generator;
 
-    private BufferedImage[] playerSprites;
+    private BufferedImage[] mainPlayerSprites;
+    private BufferedImage[] rpgPlayerSprites;
+    private BufferedImage[] missilesSprites;
     private BufferedImage[] dAlienSprites;
+    private BufferedImage[] gAlienSprites;
 
     private Controller controller;
 
@@ -52,24 +55,40 @@ public class View extends JPanel {
     }
 
     private void loadSources() throws IOException {
-        background = ImageIO.read(new File("sources/images/backgrounds/9.jpg"));
+        background = new ArrayList<BufferedImage>();
+        background.add(ImageIO.read(new File("sources/images/backgrounds/9.jpg")));
+        background.add(ImageIO.read(new File("sources/images/backgrounds/10.jpg")));
+
         horizontalPlatforms1 = new ArrayList<BufferedImage>();
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/m_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_floor_platform.png")));
+
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
+
         verticalPlatforms1 = new ArrayList<BufferedImage>();
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_wall_platform.png")));
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_wall_platform.png")));
-//        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.gif")));
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.png")));
         verticalPlatforms1.add(mirror(ImageIO.read(new File("sources/images/decoration/ladder_platform.png"))));
+
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_wall_platform.png")));
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_wall_platform.png")));
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.png")));
+        verticalPlatforms1.add(mirror(ImageIO.read(new File("sources/images/decoration/ladder_platform.png"))));
+
         generator = new ArrayList<>();
         generator.add(ImageIO.read(new File("sources/images/control/generator_b.png")));
         generator.add(ImageIO.read(new File("sources/images/control/generator_unb.png")));
-        plazmaBarrier = new ArrayList<>();
-        plazmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_unl.png")));
-        plazmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_l.png")));
+
+        plasmaBarrier = new ArrayList<>();
+        plasmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_unl.png")));
+        plasmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_l.png")));
+
         greenBlood = ImageIO.read(new File("sources/images/effects/blood_g.png"));
+        playerAim = ImageIO.read(new File("sources/images/aim/aim.png"));
 //        int rows;
 //        int cols;
 //        int width;
@@ -84,18 +103,32 @@ public class View extends JPanel {
 //        BufferedImage playerSheet = ImageIO.read(new File("sources/images/player/newHalo/sheet_halo.png"));
         BufferedImage[] sprites = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {
-            String f = String.format("sources/images/player/newHalo/%d.png", i);
+            String f = String.format("sources/images/player/mainHalo/%d.png", i);
             sprites[i] = ImageIO.read(new File(f));
         }
-        playerSprites = sprites;
+        mainPlayerSprites = sprites;
 
-        //130x120
-//        rows = 1;
-//        cols = 3;
-//        width = 130;
-//        height = 120;
-//        BufferedImage dAlienSheet = ImageIO.read(new File("sources/images/enemy/dolphin_alien.gif"));
-//        dAlienSprites = split(rows, cols, width, height, dAlienSheet);
+        sprites = new BufferedImage[24];
+        for (int i = 0; i < 24; i++) {
+            String f = String.format("sources/images/player/rpgHalo/%drpg.png", i);
+            sprites[i] = ImageIO.read(new File(f));
+        }
+        rpgPlayerSprites = sprites;
+
+//        sprites = new BufferedImage[29];
+//        for (int i = 0; i < 29; i++) {
+//            String f = String.format("sources/images/missiles/%d.png", i);
+//            sprites[i] = ImageIO.read(new File(f));
+//        }
+//        missilesSprites = sprites;
+        sprites = new BufferedImage[13];
+        for (int i = 0; i < 13; i++) {
+            String f = String.format("sources/images/missiles/%d.png", i);
+            sprites[i] = ImageIO.read(new File(f));
+        }
+        BufferedImage[] temp = split(4, 4, 64, 64, ImageIO.read(new File("sources/images/missiles/explosion.png")));
+        sprites = ArrayUtils.addAll(sprites, temp);
+        missilesSprites = sprites;
 
         sprites = new BufferedImage[18];
         for (int i = 0; i < 18; i++) {
@@ -103,6 +136,13 @@ public class View extends JPanel {
             sprites[i] = ImageIO.read(new File(f));
         }
         dAlienSprites = sprites;
+
+        sprites = new BufferedImage[17];
+        for (int i = 0; i < 17; i++) {
+            String f = String.format("sources/images/enemy/gorilla_alien/%d.png", i);
+            sprites[i] = ImageIO.read(new File(f));
+        }
+        gAlienSprites = sprites;
 
     }
 
@@ -120,24 +160,54 @@ public class View extends JPanel {
         return sprites;
     }
 
+    private int edge;
+//    private int tempFocus;
+
+    private int getXFocus(int offsetStableX) {
+        double x = controller.getWarrior().getX();
+        int dir = (int) controller.getWarrior().getDirection();
+        int offx = (int) offsetCoors(x, offsetStableX);
+        int xFocus = 0;
+//        if (x >= controller.getField().getWidth() * 0.25 && x <= controller.getField().getWidth() * 0.825
+//                && offx >= this.getWidth() * 0.25 && offx <= this.getWidth() * 0.75) {
+//            xFocus = tempFocus;
+//        } else
+//        if (offx < this.getWidth() * 0.25 && x > controller.getField().getWidth() * 0.14) {
+//            xFocus = (int) (-offx + this.getWidth() * 0.25);
+//            tempFocus = xFocus;
+//        } else
+        if (offx > this.getWidth() * 0.5 && x < controller.getField().getWidth()) {//* 0.58
+            xFocus = (int) (-offx + this.getWidth() * 0.5);
+            edge = xFocus;
+//            tempFocus = xFocus;
+        }
+//            else if (offx > this.getWidth() * 0.5 && x > controller.getField().getWidth() * 0.65)
+//            xFocus = edge;
+//        else xFocus = tempFocus;
+        return xFocus;
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+//        int offsetStableX = 1280 / 30;
+        int offsetStableX = 50;
+        int offsetStableY = 650 / 15;
+        int xFocus = getXFocus(offsetStableX);
 //        System.out.println("paint " + new Date());
         Color BG_COLOR = new Color(0xbbada0);
         g.setColor(BG_COLOR);
-        g.drawImage(background.getSubimage(0, 100, 1280, 720)
+
+        g.drawImage(background.get(controller.getLevel()).getSubimage(0, 30, 1280, 720)
                 , 0, 0, this);
-//        int offsetStableX = 1280 / 30;
-        int offsetStableX = 1280 / 30;
-        int offsetStableY = 650 / 15;
+
 //        int offx;
 //        int offy;
-        paintStage(g, offsetStableX, offsetStableY);
-        paintBGE(g, offsetStableX, offsetStableY);
-        paintEnemies(g, offsetStableX, offsetStableY);
-        paintPlayer(g, offsetStableX, offsetStableY);
-        paintEffects(g, offsetStableX, offsetStableY);
+        paintStage(g, offsetStableX, offsetStableY, xFocus);
+        paintBGE(g, offsetStableX, offsetStableY, xFocus);
+        paintEnemies(g, offsetStableX, offsetStableY, xFocus);
+        paintPlayer(g, offsetStableX, offsetStableY, xFocus);
+        paintEffects(g, offsetStableX, offsetStableY, xFocus);
 
 
         if (controller.isLevelComplete()) {
@@ -173,7 +243,7 @@ public class View extends JPanel {
  */
     }
 
-    private void paintEnemies(Graphics g, int offsetStableX, int offsetStableY) {
+    private void paintEnemies(Graphics g, int offsetStableX, int offsetStableY, int xFocus) {
         int offx = 0;
         int offy = 0;
         List<Enemy> enemies = new ArrayList<>(controller.getEnemies());
@@ -181,7 +251,19 @@ public class View extends JPanel {
             BufferedImage frame;
             if (enemy instanceof XenomorphEnemy) {
                 frame = dAlienSprites[enemy.getEnemyFrame()];
-                offx = (int) (offsetCoors(enemy.getX(), offsetStableX) - dAlienSprites[enemy.getEnemyFrame()].getWidth() / 2);
+                offx = (int) (offsetCoors(enemy.getX(), offsetStableX)
+                        - dAlienSprites[enemy.getEnemyFrame()].getWidth() / 2) + xFocus;
+                if (frame.getHeight() > 80) offy = (int) (offsetCoors((int) enemy.getY(), offsetStableY)) - 86 / 2;
+                else offy = (int) (offsetCoors((int) enemy.getY(), offsetStableY));
+                if (enemy.getDirection() == 1) {
+                    g.drawImage(frame, offx, offy, this);//direction left/stop
+                } else {
+                    g.drawImage(mirror(frame), offx, offy, this); //direction right
+                }
+            } else if (enemy instanceof GorillaEnemy) {
+                frame = gAlienSprites[enemy.getEnemyFrame()];
+                offx = (int) (offsetCoors(enemy.getX(), offsetStableX)
+                        - gAlienSprites[enemy.getEnemyFrame()].getWidth() / 2) + xFocus;
                 if (frame.getHeight() > 80) offy = (int) (offsetCoors((int) enemy.getY(), offsetStableY)) - 86 / 2;
                 else offy = (int) (offsetCoors((int) enemy.getY(), offsetStableY));
                 if (enemy.getDirection() == 1) {
@@ -205,52 +287,62 @@ public class View extends JPanel {
         }
     }
 
-    private void paintBGE(Graphics g, int offsetStableX, int offsetStableY) {
+    private void paintBGE(Graphics g, int offsetStableX, int offsetStableY, int xFocus) {
         int offx;
         int offy;
 
         List<BarrierSystem> barrierSystems = new ArrayList<>(controller.getBarrierSystems());
         for (BarrierSystem bs : barrierSystems) {
             int locked = bs.isAlive() ? 1 : 0;
-            offx = (int) (offsetCoors(bs.getX(), offsetStableX) - 50 / 2);
+            offx = (int) (offsetCoors(bs.getX(), offsetStableX) - 50 / 2) + xFocus;
             offy = (int) (offsetCoors(bs.getY(), offsetStableY) - 50 / 2);
             g.drawImage(generator.get(locked), offx, offy, 50, 50, this);
             List<BarrierSystem.Barrier> barriers = bs.getBarriers();
             for (BarrierSystem.Barrier barrier : barriers) {
-                offx = (int) (offsetCoors(barrier.getX(), offsetStableX) - 50 / 2);
+                offx = (int) (offsetCoors(barrier.getX(), offsetStableX) - 50 / 2) + xFocus;
                 offy = (int) (offsetCoors(barrier.getY(), offsetStableY));
-                g.drawImage(plazmaBarrier.get(locked), offx, offy, 50, 50, this);
+                g.drawImage(plasmaBarrier.get(locked), offx, offy, 50, 50, this);
             }
         }
     }
 
-    private void paintEffects(Graphics g, int offsetStableX, int offsetStableY) {
+    private void paintEffects(Graphics g, int offsetStableX, int offsetStableY, int xFocus) {
         int offx;
         int offy;
+
+        ArrayList<Missile> missiles = new ArrayList<Missile>(controller.getMissiles());
+        for (Missile missile : missiles) {
+            BufferedImage image = missilesSprites[missile.getMissileFrame()];
+            int size = missile.getMissileFrame() < 13 ? 4 : 2;
+            offx = (int) (offsetCoors(missile.getX(), offsetStableX) - image.getWidth() / size) + xFocus;
+            offy = (int) (offsetCoors(missile.getY(), offsetStableY) - image.getHeight() / size);
+            if (missile.getDirection() > 0)
+                g.drawImage(image, offx, offy, image.getWidth() / (size / 2), image.getHeight() / (size / 2), this);
+            else
+                g.drawImage(mirror(image), offx, offy, image.getWidth() / (size / 2), image.getHeight() / (size / 2), this);
+        }
 
         Map<Double, Double> obj = new HashMap<Double, Double>(controller.getBloodEffects());
 //        System.out.println("size b=" + obj.size());
         for (Map.Entry<Double, Double> coors : obj.entrySet()) {
-            offx = (int) (offsetCoors(coors.getKey(), offsetStableX) - 144 / 6);
+            offx = (int) (offsetCoors(coors.getKey(), offsetStableX) - 144 / 6) + xFocus; //144 - img width
             offy = (int) (offsetCoors(coors.getValue(), offsetStableY) - 144 / 6);
             g.drawImage(greenBlood, offx, offy, 144 / 3, 144 / 3, this);
         }
     }
 
-    private void paintPlayer(Graphics g, int offsetStableX, int offsetStableY) {
+    private void paintPlayer(Graphics g, int offsetStableX, int offsetStableY, int xFocus) {
         int offx;
         int offy;
-        BufferedImage image = playerSprites[controller.getWarrior().getPlayerFrame()];
-        offx = (int) (offsetCoors(controller.getWarrior().getX(), offsetStableX) - 40 / 2);
-//        if (controller.getWarrior().getPlayerFrame() < 9)
-//            offy = (int) (offsetCoors((int) controller.getWarrior().getY(), offsetStableY));
-//        else offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 20);
+        BufferedImage image;
+        if (controller.getWarrior().getWeapon() == Weapon.PISTOL)
+            image = mainPlayerSprites[controller.getWarrior().getPlayerFrame()];
+        else image = rpgPlayerSprites[controller.getWarrior().getPlayerFrame()];
+        offx = (int) (offsetCoors(controller.getWarrior().getX(), offsetStableX) - image.getWidth() / 2) + xFocus;
         offy = (int) (offsetCoors(controller.getWarrior().getY(), offsetStableY) - 5);
         if (controller.getWarrior().isCrouched()) offy += 15;
         if (image.getHeight() <= 40) offy += 60 - image.getHeight();
-//        if (controller.getWarrior().getDirection() == -1 || controller.getWarrior().getDirection() == 0) {
         if (controller.getWarrior().getDirection() == 1) {
-//            System.out.println("direction left/stop " + controller.getWarrior().getDirection());
             g.drawImage(image, offx, offy, this);
         } else {
 //            System.out.println("direction right " + controller.getWarrior().getDirection());
@@ -270,11 +362,12 @@ public class View extends JPanel {
                             / controller.getWarrior().getMaxHealth() * 40), offy - 15);
             // aim
             g.setColor(Color.gray);
-            int tx = (int) ((int) (offsetStableX * controller.getWarrior().getX())
+            int tx = (int) ((int) offx + 20
                     + controller.getWarrior().getDirectedShotRange() * offsetStableX - 3);
             int ty = offy + 5 + 3;
-            g.drawOval(tx, ty - 3, 6, 6);
-            g.drawLine((int) (offsetStableX * controller.getWarrior().getX()), ty, tx, ty);
+            g.drawImage(playerAim, tx - 10, ty - 10, 20, 20, this);
+//            g.drawOval(tx, ty - 3, 6, 6);
+//            g.drawLine((int) offx + 20, ty, tx, ty);
             g.setColor(c);
         }
 
@@ -282,9 +375,10 @@ public class View extends JPanel {
 //                (int) (offsetStableY * controller.getWarrior().getY()) - 3, 6, 6);
     }
 
-    private void paintStage(Graphics g, int offsetStableX, int offsetStableY) {
+    private void paintStage(Graphics g, int offsetStableX, int offsetStableY, int xFocus) {
         int offx;
         int offy;
+        int k = controller.getLevel();
         char[][] mapDec = controller.getStage();
         for (int i = 0; i < mapDec.length; i++) {
             for (int j = 0; j < mapDec[0].length; j++) {
@@ -295,25 +389,26 @@ public class View extends JPanel {
 //                        (int) offsetCoors(j, offsetStableX),(int) offsetCoors(i, offsetStableY));
                 char el = mapDec[i][j];
                 if (el == 'l' || el == 's' || el == 'e') {
-                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25;
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 25 + xFocus;
                     offy = (int) (offsetCoors(i, offsetStableY)) - 30;
-                    Image image = el == 'l' ? horizontalPlatforms1.get(1)
-                            : el == 's' ? horizontalPlatforms1.get(0)
-                            : horizontalPlatforms1.get(2);
+                    Image image = el == 'l' ? horizontalPlatforms1.get(1 + (k * 3))
+                            : el == 's' ? horizontalPlatforms1.get((k * 3))
+                            : horizontalPlatforms1.get(2 + (k * 3));
                     g.drawImage(image, offx, offy, 50, 100, this);
                 } else if (el == 'v' || el == 'd') {
 //                    offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
-                    offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20;
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 30 - 20 + xFocus;
                     offy = (int) offsetCoors(i, offsetStableY);
-                    g.drawImage(verticalPlatforms1.get(1), offx, offy, 100, 50, this);
-                    if (el == 'v') g.drawImage(verticalPlatforms1.get(0), offx, offy, 100, 50, this);
+                    g.drawImage(verticalPlatforms1.get(1 + (k * 4)), offx, offy, 100, 50, this);
+                    if (el == 'v') g.drawImage(verticalPlatforms1.get((k * 4)), offx, offy, 100, 50, this);
 
                 } else if (mapDec[i][j] == 'm') {
-                    offx = (int) (offsetCoors(j, (offsetStableX))) - 80 / 2;
+                    offx = (int) (offsetCoors(j, (offsetStableX))) - 80 / 2 + xFocus;
                     offy = (int) offsetCoors(i, offsetStableY) - 15;
 //                    g.drawImage(verticalPlatforms1.get(0), offx, offy, 100, 50, this);
-                    if (controller.isLadder()) g.drawImage(verticalPlatforms1.get(2), offx, offy, 80, 75, this);
-                    else g.drawImage(verticalPlatforms1.get(3), offx, offy, 80, 75, this);
+                    if (controller.isLadder())
+                        g.drawImage(verticalPlatforms1.get(2 + (k * 4)), offx, offy, 80, 75, this);
+                    else g.drawImage(verticalPlatforms1.get(3 + (k * 4)), offx, offy, 80, 75, this);
                 }
             }
         }

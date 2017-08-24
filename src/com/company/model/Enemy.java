@@ -18,6 +18,8 @@ public class Enemy extends BaseObject {
     protected boolean excited;
     //объект в зоне досягаемости для нанесение урона
     protected boolean targetAchieved;
+    // скорость передвижения
+    protected double speed;
 
     public int getEnemyFrame() {
         return objectFrame;
@@ -54,7 +56,7 @@ public class Enemy extends BaseObject {
      * Устанавливаем вектор движения влево
      */
     public void moveLeft() {
-        dx = -0.1;
+        dx = -speed;
         direction = -1;
     }
 
@@ -62,7 +64,7 @@ public class Enemy extends BaseObject {
      * Устанавливаем вектор движения вправо
      */
     public void moveRight() {
-        dx = 0.1;
+        dx = speed;
         direction = 1;
     }
 
