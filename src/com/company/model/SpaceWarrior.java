@@ -43,6 +43,15 @@ public class SpaceWarrior extends BaseObject {
     private Weapon weapon;
     // ready to fire (reloaded)
     private boolean reloaded = true;
+    private double reloadingProgress;
+
+    public double getReloadingProgress() {
+        return reloadingProgress;
+    }
+
+    public int getAmmo() {
+        return ammunition.get(weapon);
+    }
 
     public Weapon getWeapon() {
         return weapon;
@@ -53,7 +62,10 @@ public class SpaceWarrior extends BaseObject {
         if (ammunition.size() > i - 1) {
             for (Weapon w : ammunition.keySet()) {
                 i--;
-                if (i == 0) weapon = w;
+                if (i == 0) {
+                    weapon = w;
+                    return;
+                }
             }
         }
     }
@@ -78,32 +90,38 @@ public class SpaceWarrior extends BaseObject {
 
     private void reloading() {
         reloaded = false;
-        if (weapon == Weapon.RPG) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(3000); // 3 sec rating
-                        reloaded = true;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < weapon.getRate() / 2 + 1; i++) {
+                        reloadingProgress = i * 2; // 2 for rollback and 100%
+                        reloadingProgress /= weapon.getRate();
+                        Thread.sleep(2);
+//                        System.out.println(reloadingProgress);
+                        //so we have 0 - 100 reload progress
                     }
-
+                    reloaded = true;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
-            thread.setDaemon(true);
-            thread.start();
-        }
+
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void shoot(Controller controller) {
-        if (!reloaded) return;
+        if (!reloaded ||
+                ammunition.get(weapon) == 0) return;
+        ammunition.put(weapon, ammunition.get(weapon) - 1);
         shot = true;
         crouch(false);
+        reloading();
 
         if (weapon == Weapon.RPG) {
-            controller.addMissile(x + direction, y, direction);
-            reloading();
+            controller.addMissile(x + direction / 2, y, direction, 4); // 4 - rpg damage (change needed)
             return;
         }
 
@@ -123,6 +141,7 @@ public class SpaceWarrior extends BaseObject {
             }
 //            else System.out.println("boss shot");
         }
+
     }
 
     public int getPlayerFrame() {
@@ -438,13 +457,14 @@ public class SpaceWarrior extends BaseObject {
 
     public SpaceWarrior(double x, double y) {
         super(x, y, 0.5, 15);
+        direction = -1;
         jumped = false;
         climbing = false;
         shotRange = 2;
         damage = 0.5;
-        ammunition.put(Weapon.PISTOL, -1);
+        ammunition.put(Weapon.PISTOL, 100);
         ammunition.put(Weapon.RPG, 5);
-        weapon = Weapon.RPG;
+        weapon = Weapon.PISTOL;
         setWarriorFrames();
     }
 

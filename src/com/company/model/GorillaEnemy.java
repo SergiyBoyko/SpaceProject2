@@ -16,9 +16,9 @@ public class GorillaEnemy extends Enemy {
 
     public GorillaEnemy(double x, double y) {
         super(x, y, 1, 3.5, 7);
-        setGorillaFrames();
         damage = 0.25;
         speed = NORMAL_SPEED;
+        setGorillaFrames();
     }
 
     public void setGorillaFrames() {

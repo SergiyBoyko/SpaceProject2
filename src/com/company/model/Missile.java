@@ -14,11 +14,11 @@ public class Missile extends BaseObject {
     //последний цикл кадров
     private boolean lastFrames = false;
 
-    public Missile(double x, double y, double direction) {
+    public Missile(double x, double y, double direction, double damage) {
         super(x, y, 0.2, 1);
         this.direction = direction;
         this.dx = direction * 0.25;
-        damage = 4;
+        this.damage = damage;
         setMissileFrames();
     }
 
@@ -50,7 +50,7 @@ public class Missile extends BaseObject {
             frameIterator = 0;
 //        System.out.println("size="+objectFrames.size() + " i:" + frameIterator);
         objectFrame = objectFrames.get((int) frameIterator);
-        frameIterator += 0.4;
+        frameIterator += 1;
 //        System.out.println(frameIterator);
     }
     
@@ -71,10 +71,10 @@ public class Missile extends BaseObject {
         }else if (!lastFrames) {
 //            System.out.println("last Frames begin");
             lastFrames = true;
-            frameIterator = 0.4;
+            frameIterator = 1;
             setMissileFrames();
-        } else if (frameIterator <= 0.4) {
-            System.out.println("kaboom");
+        } else if (frameIterator <= 1) {
+//            System.out.println("kaboom");
             controller.getMissiles().remove(this);
         }
 //        else System.out.println("iterator=" + frameIterator);

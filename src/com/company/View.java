@@ -1,12 +1,17 @@
 package com.company;
 
 import com.company.controller.Controller;
-import com.company.model.*;
-import org.apache.commons.lang3.ArrayUtils;
+import com.company.model.BarrierSystem;
+import com.company.model.Enemy;
+import com.company.model.GorillaEnemy;
+import com.company.model.Missile;
+import com.company.model.Weapon;
+import com.company.model.XenomorphEnemy;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
 
 /**
  * Created by Serhii Boiko on 11.08.2017.
@@ -25,10 +33,10 @@ public class View extends JPanel {
     private List<BufferedImage> background;
     private List<BufferedImage> horizontalPlatforms1;
     private List<BufferedImage> verticalPlatforms1;
-//    private BufferedImage platformVertical1;
 
     private Image greenBlood;
     private Image playerAim;
+    private BufferedImage healthBar;
 
     private List<BufferedImage> plasmaBarrier;
     private List<BufferedImage> generator;
@@ -51,23 +59,31 @@ public class View extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    private void loadSources() throws IOException {
+    private void loadSources() throws IOException, InterruptedException {
+//        JOptionPane.showMessageDialog(null, "background");
+//        Thread.sleep(1000);
         background = new ArrayList<BufferedImage>();
         background.add(ImageIO.read(new File("sources/images/backgrounds/9.jpg")));
         background.add(ImageIO.read(new File("sources/images/backgrounds/10.jpg")));
 
+//        JOptionPane.showMessageDialog(null, "horizontalPlatforms1");
+//        Thread.sleep(1000);
         horizontalPlatforms1 = new ArrayList<BufferedImage>();
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/m_floor_platform.png")));
         horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_floor_platform.png")));
 
-        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
-        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
-        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_stone_floor_platform.gif")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/m_stone_floor_platform.png")));
+        horizontalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_stone_floor_platform.png")));
 
+//        JOptionPane.showMessageDialog(null, "verticalPlatforms1");
+//        Thread.sleep(1000);
         verticalPlatforms1 = new ArrayList<BufferedImage>();
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/s_wall_platform.png")));
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/e_wall_platform.png")));
@@ -76,19 +92,27 @@ public class View extends JPanel {
 
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_wall_platform.png")));
         verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/stone_wall_platform.png")));
-        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_platform.png")));
-        verticalPlatforms1.add(mirror(ImageIO.read(new File("sources/images/decoration/ladder_platform.png"))));
+        verticalPlatforms1.add(ImageIO.read(new File("sources/images/decoration/ladder_stone_platform.png")));
+        verticalPlatforms1.add(mirror(ImageIO.read(new File("sources/images/decoration/ladder_stone_platform.png"))));
 
+//        JOptionPane.showMessageDialog(null, "generator");
+//        Thread.sleep(1000);
         generator = new ArrayList<>();
         generator.add(ImageIO.read(new File("sources/images/control/generator_b.png")));
         generator.add(ImageIO.read(new File("sources/images/control/generator_unb.png")));
 
+//        JOptionPane.showMessageDialog(null, "plasmaBarrier");
+//        Thread.sleep(1000);
         plasmaBarrier = new ArrayList<>();
         plasmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_unl.png")));
         plasmaBarrier.add(ImageIO.read(new File("sources/images/control/bar_l.png")));
 
+//        JOptionPane.showMessageDialog(null, "greenBlood & playerAim");
+//        Thread.sleep(1000);
         greenBlood = ImageIO.read(new File("sources/images/effects/blood_g.png"));
         playerAim = ImageIO.read(new File("sources/images/aim/aim.png"));
+        healthBar = ImageIO.read(new File("sources/images/interface/bar_health.png"));
+
 //        int rows;
 //        int cols;
 //        int width;
@@ -101,6 +125,8 @@ public class View extends JPanel {
 //        playerSprites = split(rows, cols, width, height, playerSheet);
 
 //        BufferedImage playerSheet = ImageIO.read(new File("sources/images/player/newHalo/sheet_halo.png"));
+//        JOptionPane.showMessageDialog(null, "mainPlayerSprites");
+//        Thread.sleep(1000);
         BufferedImage[] sprites = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {
             String f = String.format("sources/images/player/mainHalo/%d.png", i);
@@ -108,6 +134,8 @@ public class View extends JPanel {
         }
         mainPlayerSprites = sprites;
 
+//        JOptionPane.showMessageDialog(null, "rpgPlayerSprites");
+//        Thread.sleep(1000);
         sprites = new BufferedImage[24];
         for (int i = 0; i < 24; i++) {
             String f = String.format("sources/images/player/rpgHalo/%drpg.png", i);
@@ -121,15 +149,19 @@ public class View extends JPanel {
 //            sprites[i] = ImageIO.read(new File(f));
 //        }
 //        missilesSprites = sprites;
-        sprites = new BufferedImage[13];
+//        JOptionPane.showMessageDialog(null, "missilesSprites");
+//        Thread.sleep(1000);
+        sprites = new BufferedImage[29];
         for (int i = 0; i < 13; i++) {
             String f = String.format("sources/images/missiles/%d.png", i);
             sprites[i] = ImageIO.read(new File(f));
         }
-        BufferedImage[] temp = split(4, 4, 64, 64, ImageIO.read(new File("sources/images/missiles/explosion.png")));
-        sprites = ArrayUtils.addAll(sprites, temp);
+        BufferedImage[] temp2 = split(4, 4, 64, 64, ImageIO.read(new File("sources/images/missiles/explosion.png")));
+        System.arraycopy(temp2, 0, sprites, 13, temp2.length);
         missilesSprites = sprites;
 
+//        JOptionPane.showMessageDialog(null, "dAlienSprites");
+//        Thread.sleep(1000);
         sprites = new BufferedImage[18];
         for (int i = 0; i < 18; i++) {
             String f = String.format("sources/images/enemy/dolphin_alien/%d.png", i);
@@ -137,6 +169,8 @@ public class View extends JPanel {
         }
         dAlienSprites = sprites;
 
+//        JOptionPane.showMessageDialog(null, "gAlienSprites");
+//        Thread.sleep(1000);
         sprites = new BufferedImage[17];
         for (int i = 0; i < 17; i++) {
             String f = String.format("sources/images/enemy/gorilla_alien/%d.png", i);
@@ -352,20 +386,27 @@ public class View extends JPanel {
         if (controller.getWarrior().isAlive()) {
             Color c = g.getColor();
             // health bar
+            g.drawImage(healthBar, 5, 10, (int) (healthBar.getWidth() / 1.5), healthBar.getHeight() / 2, this);
             if (controller.getWarrior().getHealth() < 0.4 * controller.getWarrior().getMaxHealth())
                 g.setColor(Color.red);
             else if (controller.getWarrior().getHealth() < 0.7 * controller.getWarrior().getMaxHealth())
                 g.setColor(Color.yellow);
             else g.setColor(Color.green);
+            g.fillRoundRect(15, 48, (int) (controller.getWarrior().getHealth()
+                    / controller.getWarrior().getMaxHealth() * 192), 12, 5, 5);
+            g.drawLine(15, 45, (int) (controller.getWarrior().getReloadingProgress() * 130) + 15, 45);
             g.drawLine(offx, offy - 15,
                     (int) (offx + controller.getWarrior().getHealth()
                             / controller.getWarrior().getMaxHealth() * 40), offy - 15);
             // aim
-            g.setColor(Color.gray);
+            g.setColor(new Color(0xA9A9A9));
+            g.setFont(new Font("Stencil", Font.PLAIN, 20));
+            g.drawString(controller.getWarrior().getWeapon().name(), 25, 40);
+            g.drawString(String.valueOf(controller.getWarrior().getAmmo()), 100, 40);
             int tx = (int) ((int) offx + 20
                     + controller.getWarrior().getDirectedShotRange() * offsetStableX - 3);
             int ty = offy + 5 + 3;
-            g.drawImage(playerAim, tx - 10, ty - 10, 20, 20, this);
+            g.drawImage(playerAim, tx - 5, ty - 5, 10, 10, this);
 //            g.drawOval(tx, ty - 3, 6, 6);
 //            g.drawLine((int) offx + 20, ty, tx, ty);
             g.setColor(c);

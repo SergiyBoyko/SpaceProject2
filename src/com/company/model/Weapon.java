@@ -8,6 +8,16 @@ public enum Weapon {
     RPG;
 
 
+    int getRate() {
+        int rate = 0;
+        if (this == PISTOL) {
+            rate = 200; // 0.2 sec
+        } else if (this == RPG) {
+            rate = 3000; // 3 sec
+        }
+        return rate;
+    }
+
     void shot() {
 
     }

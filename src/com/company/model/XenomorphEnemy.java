@@ -13,9 +13,9 @@ public class XenomorphEnemy extends Enemy {
 
     public XenomorphEnemy(double x, double y) {
         super(x, y, 1, 5, 5);
-        setXenomorphFrames();
         damage = 0.15;
         speed = 0.1;
+        setXenomorphFrames();
     }
 
     public void setXenomorphFrames() {
@@ -73,7 +73,7 @@ public class XenomorphEnemy extends Enemy {
             moveRight();
         } else if (Math.round(y) == Math.round(o.getY())) {
             targetAchieved = true;
-            System.out.println();
+//            System.out.println();
             stopMove();
             o.takeDamage(damage); // TODO: 14.08.2017 implement sometime
         }

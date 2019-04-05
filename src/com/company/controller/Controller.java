@@ -1,13 +1,22 @@
 package com.company.controller;
 
 import com.company.View;
-import com.company.model.*;
+import com.company.model.BarrierSystem;
+import com.company.model.BaseObject;
+import com.company.model.Enemy;
+import com.company.model.Field;
+import com.company.model.Missile;
+import com.company.model.SpaceWarrior;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -58,8 +67,8 @@ public class Controller extends KeyAdapter implements MouseListener {
         bloodEffects.put(x, y);
     }
 
-    public void addMissile (double x, double y, double direction) {
-        missiles.add(new Missile(x, y, direction));
+    public void addMissile(double x, double y, double direction, double damage) {
+        missiles.add(new Missile(x, y, direction, damage));
     }
 
     public List<Missile> getMissiles() {
@@ -94,13 +103,20 @@ public class Controller extends KeyAdapter implements MouseListener {
 
     public Controller() {
         view = new View(this);
-//        field = new Field(0);
-        field = new Field(1);
-        level = 1;
+        level = 0;
+        field = new Field(level);
         barrierSystems = field.getBarrierSystems();
         warrior = new SpaceWarrior(4, 12); // x, y
     }
     private boolean ladder;
+
+    private static Integer i;
+
+    public static void main(String[] args) {
+        if (i == 42) {
+            System.out.println("huy");
+        }
+    }
 
     public boolean isLadder() {
         return ladder;
